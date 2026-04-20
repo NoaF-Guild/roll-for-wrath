@@ -128,6 +128,7 @@ end
 
 function M.create_scroll_frame( parent, name )
   local f = m.api.CreateFrame( "ScrollFrame", name, parent )
+  local is_updating = false -- Recursion lock
 
   f.slider = m.api.CreateFrame( "Slider", nil, f )
   f.slider:SetOrientation( 'VERTICAL' )
@@ -139,15 +140,28 @@ function M.create_scroll_frame( parent, name )
   f.slider.thumb:SetTexture( .125, .624, .976, .5 )
 
   f.slider:SetScript( "OnValueChanged", function()
+    if is_updating then return end
+    is_updating = true
     f:SetVerticalScroll( this:GetValue() )
     f.update_scroll_state()
+    is_updating = false
   end )
 
   f.update_scroll_state = function()
-    f.slider:SetMinMaxValues( 0, f:GetVerticalScrollRange() )
-    f.slider:SetValue( f:GetVerticalScroll() )
+    if is_updating then return end
+    is_updating = true
 
-    local r = f:GetHeight() + f:GetVerticalScrollRange()
+    local scroll_range = f:GetVerticalScrollRange()
+    f.slider:SetMinMaxValues( 0, scroll_range )
+    
+    local current_scroll = f:GetVerticalScroll()
+
+    -- Added a precision check to prevent the 3.3.5a recursion loop
+    if math.abs( f.slider:GetValue() - current_scroll ) > 0.1 then
+      f.slider:SetValue( current_scroll )
+    end
+
+    local r = f:GetHeight() + scroll_range
     local v = f:GetHeight()
     local ratio = v / r
 
@@ -158,6 +172,8 @@ function M.create_scroll_frame( parent, name )
     else
       f.slider:Hide()
     end
+    
+    is_updating = false
   end
 
   f.scroll = function( self, step )
