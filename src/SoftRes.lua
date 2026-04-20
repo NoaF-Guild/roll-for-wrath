@@ -52,13 +52,14 @@ function M.new( db )
       return nil
     end
 
-    if m.bcc or m.wotlk then  -- BCC and WotLK both use zlib-compressed softres data
-      data = LibStub( "LibDeflate" ):DecompressZlib( data )
-
-      if not data then
-        m.pretty_print( "Couldn't decompress softres data!", m.colors.red )
-        return nil
+    if m.bcc or m.wotlk then
+      -- Try zlib decompression first (softres.it exports are compressed).
+      -- If it fails, fall through and treat data as plain JSON (e.g. custom export tools).
+      local decompressed = LibStub( "LibDeflate" ):DecompressZlib( data )
+      if decompressed then
+        data = decompressed
       end
+      -- If decompressed is nil, data is left as-is and JSON parsing below will validate it.
     end
 
     local json = lib_stub( "Json-0.1.2" )
