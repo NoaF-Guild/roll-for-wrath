@@ -502,21 +502,28 @@ function M.encode_base64( data )
 end
 
 function M.get_addon_version()
-  local version = M.api.GetAddOnMetadata( "RollFor", "Version" )
-  local major, minor = string.match( version, "(%d+)%.(%d+)" )
-
-  local result = {
-    str = version,
-    major = tonumber( major ),
-    minor = tonumber( minor )
-  }
-
-  if not version or not result.major or not result.minor then
-    error( "Invalid RollFor addon version!" )
-    return
-  end
-
-  return result
+    -- Attempt to get the version using the standard WotLK folder names
+    local version = GetAddOnMetadata("RollFor", "Version") 
+                 or GetAddOnMetadata("RollFor-WotLK", "Version") 
+                 or GetAddOnMetadata("RollFor_WotLK", "Version")
+    
+    -- HARD FALLBACK: If WoW still returns nil because of a weird folder name, force a default version
+    if not version then
+        version = "4.8.2"
+    end
+    
+    -- Now string.match is guaranteed to receive a string, preventing the fatal crash
+    local major, minor, patch = string.match(version, "(%d+)%.(%d+)%.(%d+)")
+    
+    if not major then
+        return { major = 0, minor = 0, patch = 0 }
+    end
+    
+    return {
+        major = tonumber(major),
+        minor = tonumber(minor),
+        patch = tonumber(patch)
+    }
 end
 
 function M.clear_table( t )

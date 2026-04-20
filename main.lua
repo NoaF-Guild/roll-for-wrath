@@ -854,11 +854,12 @@ function M.on_player_login()
   subscribe_for_component_events()
   setup_slash_commands()
 
-  -- WotLK requires explicit prefix registration to receive CHAT_MSG_ADDON events.
-  -- This is a no-op on Vanilla/BCC where the function doesn't exist.
-  if m.api.RegisterAddonMessagePrefix then
-    m.api.RegisterAddonMessagePrefix( "RollFor" )
-  end
+ -- Only register the prefix if the client API requires it
+if C_ChatInfo and C_ChatInfo.RegisterAddonMessagePrefix then
+    C_ChatInfo.RegisterAddonMessagePrefix("RollFor")
+elseif RegisterAddonMessagePrefix then
+    RegisterAddonMessagePrefix("RollFor")
+end
 
   info( string.format( "Loaded (%s).", hl( string.format( "v%s", version.str ) ) ) )
 
