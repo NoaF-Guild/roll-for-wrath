@@ -75,7 +75,8 @@ function M.new( event_frame, api )
   ---@param slot number
   ---@return LootSlotInfo?
   local function get_info( slot )
-    if m.vanilla then
+    if m.vanilla or m.wotlk then
+      -- Vanilla and WotLK: GetLootSlotInfo returns texture, name, quantity, quality (4 values)
       local texture, name, quantity, quality = api.GetLootSlotInfo( slot )
 
       return texture and {
@@ -85,6 +86,7 @@ function M.new( event_frame, api )
         quality = quality
       } or nil
     else
+      -- BCC/Retail: GetLootSlotInfo returns texture, name, quantity, currencyID, quality (5 values)
       local texture, name, quantity, _, quality = api.GetLootSlotInfo( slot )
 
       return texture and {
