@@ -247,7 +247,7 @@ function M.new()
         local old_on_show = frame:GetScript( "OnShow" )
 
         frame:SetScript( "OnShow", function()
-          if m.vanilla then
+          if m.vanilla or m.wotlk then
             m.api.PlaySound( "igMainMenuOpen" )
           else
             m.api.PlaySound( m.api.SOUNDKIT.IG_MAINMENU_OPEN )
@@ -263,7 +263,7 @@ function M.new()
             f:StopMovingOrSizing()
           end
 
-          if m.vanilla then
+          if m.vanilla or m.wotlk then
             m.api.PlaySound( "igMainMenuClose" )
           else
             m.api.PlaySound( m.api.SOUNDKIT.IG_MAINMENU_CLOSE )

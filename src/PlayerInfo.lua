@@ -38,7 +38,9 @@ function M.new( api )
   end
 
   local function is_leader()
-    return api.UnitIsGroupLeader( "player" )
+    -- UnitIsGroupLeader was added in Cataclysm. In WotLK 3.3.5a use UnitIsPartyLeader.
+    local fn = api.UnitIsGroupLeader or api.UnitIsPartyLeader
+    return fn and fn( "player" ) or false
   end
 
   local function is_assistant()

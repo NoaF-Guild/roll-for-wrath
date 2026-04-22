@@ -48,6 +48,25 @@ _G.PlaySound = function(sound, channel)
 end
 -------------------------------------------------
 
+-- SOUNDKIT table shim: In WotLK 3.3.5a, SOUNDKIT is not a global table.
+-- FrameBuilder and RollingPopup reference m.api.SOUNDKIT.* on the non-vanilla path.
+-- The PlaySound polyfill above already maps these numeric IDs to string names,
+-- so we just need the table to exist so the lookup doesn't error first.
+_G.SOUNDKIT = _G.SOUNDKIT or {
+  IG_MAINMENU_OPEN        = 850,
+  IG_MAINMENU_CLOSE       = 851,
+  IG_MAINMENU_OPTION      = 856,
+  IG_MAINMENU_OPTION_CHECKBOX_ON  = 798,
+  IG_MAINMENU_OPTION_CHECKBOX_OFF = 799,
+  SPELLBOOK_OPEN          = 839,
+  SPELLBOOK_CLOSE         = 840,
+  IG_QUEST_LIST_OPEN      = 882,
+  IG_QUEST_LIST_CLOSE     = 883,
+  -- Client sounds used by Client.lua
+  RAID_WARNING            = 0,  -- "RaidWarning" is a string in 3.3.5, skip numeric
+  PVP_THROUGH_QUEUE       = 0,  -- "PVPTHROUGHQUEUE" is a string in 3.3.5, skip numeric
+}
+
 -- WotLK uses Lua 5.1, so # operator works and math.mod is gone.
 ---@param t table
 ---@return number
