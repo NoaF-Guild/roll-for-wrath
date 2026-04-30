@@ -96,8 +96,8 @@ Disable this feature with:
 ---
 
 ### Soft res integration
- * Integrates with https://raidres.fly.dev (1.12.1).
- * Integrates with https://softres.it (2.5.2) via Gargul Export.
+ * Integrates with https://softres.epoglogs.com/ (Epoch).
+ * Integrates with https://softres.it (Other) via Gargul Export.
  * Minimap icon shows soft res status and who did not soft res.
  * Fully automated (shows who soft ressed, only accepts rolls from players who SR).
 
