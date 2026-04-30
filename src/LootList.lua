@@ -42,6 +42,10 @@ function M.new( loot_facade, item_utils, tooltip_reader, boss_list, dummy_items_
     local dummy_item_count = getn( dummy_items )
     local new_item = item_count > dummy_item_count and item or dummy_items[ item_count ]
 
+    -- [ADDED] Attach the exact physical slot to the item object.
+    -- This guarantees we can track duplicates uniquely when rolling.
+    new_item.slot = slot
+
     items[ slot ] = new_item
   end
 
@@ -58,7 +62,12 @@ function M.new( loot_facade, item_utils, tooltip_reader, boss_list, dummy_items_
         local info = lf.get_info( slot )
 
         if info then
-          items[ slot ] = item_utils.make_coin( info.texture, info.name )
+          local coin_item = item_utils.make_coin( info.texture, info.name )
+          
+          -- [ADDED] Ensure coins also get a slot attached
+          coin_item.slot = slot
+          
+          items[ slot ] = coin_item
         end
       else
         local link = lf.get_link( slot )
@@ -129,12 +138,16 @@ function M.new( loot_facade, item_utils, tooltip_reader, boss_list, dummy_items_
   ---@return number?
   local function get_slot( item_id )
     for slot, item in pairs( items ) do
-      if item_id == "Coin" and item.type == "Coin" then
-        return slot
-      end
+      -- [ADDED] Defensive check to ensure the item isn't nil 
+      -- before trying to access its properties.
+      if item then
+        if item_id == "Coin" and item.type == "Coin" then
+          return slot
+        end
 
-      if item.id == item_id then
-        return slot
+        if item.id == item_id then
+          return slot
+        end
       end
     end
   end
@@ -162,7 +175,8 @@ function M.new( loot_facade, item_utils, tooltip_reader, boss_list, dummy_items_
       result = result + 1
     end
 
-    return 0
+    -- [FIXED] This was previously hardcoded to 'return 0'!
+    return result
   end
 
   ---@type LootList
