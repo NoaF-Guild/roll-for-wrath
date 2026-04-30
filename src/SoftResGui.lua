@@ -179,12 +179,18 @@ local function create_frame( api, on_import, on_clear, on_cancel, on_dirty )
     end )
   end
 
-  local label = frame:CreateFontString( nil, "OVERLAY", "GameFontNormal" )
-  label:SetPoint( "BOTTOMLEFT", frame, "BOTTOMLEFT", 20, 22 )
-  label:SetTextColor( 1, 1, 1, 1 )
-  local sr_website = m.vanilla and "raidres.fly.dev" or "    softres.it"  -- softres.it covers BCC + WotLK
-  label:SetText( string.format( "%s      %s %s", m.colors.blue( "RollFor" ), hl( sr_website ), "data import" ) )
+  -- Determine which website to show based on realm
+local realm = GetRealmName()
+local sr_website
+if realm == "Kezan" or realm == "Gurubashi" then
+  sr_website = "softres.epoglogs.com"
+elseif m.vanilla then
+  sr_website = "raidres.fly.dev"
+else
+  sr_website = "    softres.it"  -- BCC + WotLK
+end
 
+label:SetText( string.format( "%s      %s %s", m.colors.blue( "RollFor" ), hl( sr_website ), "data import" ) )
   ---@diagnostic disable-next-line: undefined-global
   table.insert( UISpecialFrames, "RollForSoftResLootFrame" )
   return frame
