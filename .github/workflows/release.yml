@@ -1,16 +1,27 @@
-name: Package Addon
+name: Release
 
 on:
-  release:
-    types: [published]
+  push:
+    tags:
+      - 'v*'
 
 jobs:
-  build:
+  release:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-        with:
-          fetch-depth: 0 # Required to fetch tags
+      - name: Checkout code
+        uses: actions/checkout@v2
 
-      - name: Package and Release
-        uses: BigWigsMods/packager@master
+      - name: Update version in .toc file
+        run: |
+          TAG_VERSION=${GITHUB_REF#refs/tags/}
+          sed -i 's/^Version: .*/Version: $TAG_VERSION/' path/to/your/file.toc
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag: ${{ github.ref }}
+          files: |
+            path/to/your/package.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
