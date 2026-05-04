@@ -12,7 +12,6 @@ jobs:
       contents: write
     steps:
       - name: Checkout code
-        # Updated from v3 to v4 to support Node 24
         uses: actions/checkout@v4 
         with:
           fetch-depth: 0
@@ -40,10 +39,6 @@ jobs:
       - name: Package and Release
         uses: BigWigsMods/packager@master
         with:
-          # -p . : Uses local files modified by sed[cite: 1, 2]
-          # -n : Forces internal folder name
-          # -z : Forces zip file name
-          # -r : Forces upload to GitHub Release
           args: -p . -n RollFor-WotLK -z RollFor-WotLK -r
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
