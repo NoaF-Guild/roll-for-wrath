@@ -1,1 +1,8 @@
 package-as: RollFor-WotLK
+
+ignore:
+  - .github
+  - .gitattributes
+  - .gitignore
+  - .pkgmeta
+  - update.sh
