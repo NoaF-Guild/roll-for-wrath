@@ -3,7 +3,9 @@ name: Release
 on:
   push:
     tags:
-      - 'v*'
+      # Change 'v*' to '*' to trigger on any tag, 
+      # or '[0-9]*' to trigger specifically on tags starting with a number.
+      - '[0-9]*'
 
 jobs:
   release:
@@ -17,7 +19,8 @@ jobs:
       - name: Extract version from tag
         id: version
         run: |
-          VERSION=${GITHUB_REF#refs/tags/v}
+          # Changed: We now take the raw tag name without stripping 'v'
+          VERSION=${GITHUB_REF#refs/tags/}
           echo "version=$VERSION" >> $GITHUB_OUTPUT
           echo "VERSION=$VERSION" >> $GITHUB_ENV
 
