@@ -173,7 +173,7 @@ function M.new( item_on_roll )
 
       for _, player in ipairs( soft_ressers or {} ) do
         for _ = 1, player.rolls or 1 do
-          add( player.name, player.class, player.role, RT.SoftRes, player.plus_ones )
+          add( player.name, player.class, player.role, RT.SoftRes, nil, player.plus_ones )
         end
       end
     end
@@ -207,7 +207,7 @@ function M.new( item_on_roll )
 
     for _, player in ipairs( required_rolling_players or {} ) do
       for _ = 1, player.rolls or 1 do
-        add( player.name, player.class, player.role, rolling_strategy == RS.SoftResRoll and RT.SoftRes or RS.TieRoll, player.plus_ones )
+        add( player.name, player.class, player.role, rolling_strategy == RS.SoftResRoll and RT.SoftRes or RS.TieRoll, nil, player.plus_ones )
       end
     end
   end
