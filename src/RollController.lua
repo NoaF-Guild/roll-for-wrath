@@ -80,10 +80,16 @@ function M.new(
 
   ---@param item_id ItemId?
   local function get_roll_tracker( item_id )
-    if not item_id then error( "No item_id was provided.", 2 ) end
+    if not item_id then
+      M.debug.add( "get_roll_tracker: no item_id provided" )
+      return nil
+    end
 
     local roll_tracker = roll_trackers[ item_id ]
-    if not roll_tracker then error( string.format( "No RollTracker found for item %s.", item_id ), 2 ) end
+    if not roll_tracker then
+      M.debug.add( string.format( "get_roll_tracker: no tracker for item %s", tostring( item_id ) ) )
+      return nil
+    end
 
     ---@type RollTracker
     return roll_tracker
@@ -250,6 +256,7 @@ function M.new(
     end
 
     local roll_tracker = get_roll_tracker( item.id )
+    if not roll_tracker then return end
     local winners = roll_tracker.get().winners
 
     ml_confirmation_data = {
@@ -446,6 +453,7 @@ function M.new(
     if candidate_count > 0 then add_award_other_button( dropped_item, buttons, candidates, {}, RS.SoftResRoll ) end
     add_close_button( buttons, S.Preview )
     local roll_tracker = get_roll_tracker( item.id )
+    if not roll_tracker then return end
     rolling_popup_data[ item.id ] = {
       item_link = item.link, item_tooltip_link = IU.get_tooltip_link( item.link ), item_texture = item.texture,
       item_count = item_count, hard_ressed = false, winners = {}, rolls = roll_tracker.create_roll_data( soft_ressers ), strategy_type = RS.SoftResRoll, buttons = buttons, type = "Preview"
@@ -520,6 +528,7 @@ function M.new(
   local function tie_content()
     M.debug.add( "tie_content" )
     local roll_tracker = get_roll_tracker( currently_displayed_item and currently_displayed_item.id )
+    if not roll_tracker then return end
     local data = roll_tracker.get()
     local item = data.item
     local winners = data.winners
@@ -565,6 +574,7 @@ function M.new(
 
   local function refresh_finish_popup_content( candidates )
     local roll_tracker = get_roll_tracker( currently_displayed_item and currently_displayed_item.id )
+    if not roll_tracker then return end
     local data, current_iteration = roll_tracker.get()
     if not current_iteration then return end
     local strategy_type = current_iteration.rolling_strategy
@@ -618,6 +628,7 @@ function M.new(
 
   local function on_roll( player_name, player_class, roll_type, roll, plus_ones )
     local roll_tracker = get_roll_tracker( currently_displayed_item and currently_displayed_item.id )
+    if not roll_tracker then return end
     local roller = m.find( player_name, softres.get_all_rollers(), "name")
     roll_tracker.add( player_name, player_class, roller and roller.role, roll_type, roll, plus_ones )
     local data, current_iteration = roll_tracker.get()
@@ -635,12 +646,14 @@ function M.new(
 
   local function add_ignored( player_name, player_class, roll_type, roll, reason )
     local roll_tracker = get_roll_tracker( currently_displayed_item and currently_displayed_item.id )
+    if not roll_tracker then return end
     roll_tracker.add_ignored( player_name, roll_type, roll, reason )
     notify_subscribers( "ignored_roll", { player_name = player_name, player_class = player_class, roll_type = roll_type, roll = roll, reason = reason } )
   end
 
   local function tick( seconds_left )
     local roll_tracker = get_roll_tracker( currently_displayed_item and currently_displayed_item.id )
+    if not roll_tracker then return end
     roll_tracker.tick( seconds_left )
     notify_subscribers( "tick", { seconds_left = seconds_left } )
     local data, current_iteration = roll_tracker.get()
@@ -652,14 +665,22 @@ function M.new(
 
   local function winners_found( item, item_count, winners, strategy )
     local roll_tracker = get_roll_tracker( item.id )
+    if not roll_tracker then return end
     roll_tracker.add_winners( winners )
     notify_subscribers( "winners_found", { item = item, item_count = item_count, winners = winners, rolling_strategy = strategy } )
   end
 
   local function finish()
     local item_id = currently_displayed_item and currently_displayed_item.id
-    if not item_id then error( "WTF" ) end
+    if not item_id then
+      M.debug.add( "finish() called with no currently_displayed_item - ignoring" )
+      return
+    end
     local roll_tracker = get_roll_tracker( item_id )
+    if not roll_tracker then
+      M.debug.add( string.format( "finish() no tracker for item %s - ignoring", tostring( item_id ) ) )
+      return
+    end
     local slot = loot_list.get_slot( item_id )
     local candidates = slot and ml_candidates.get( slot ) or {}
     roll_tracker.finish( candidates )
@@ -669,6 +690,7 @@ function M.new(
 
   local function rolling_started( strategy_type, item, item_count, seconds, message, rolling_players )
     local roll_tracker = get_roll_tracker( item.id )
+    if not roll_tracker then return end
     roll_tracker.start( strategy_type, item_count, seconds, message, rolling_players )
     local _, _, quality = m.api.GetItemInfo( string.format( "item:%s:0:0:0", item.id ) )
     rolling_popup:border_color( m.get_popup_border_color( quality ) )
@@ -682,6 +704,7 @@ function M.new(
 
   local function there_was_a_tie( players, item, item_count, roll_type, roll, rerolling, top_roll )
     local roll_tracker = get_roll_tracker( item.id )
+    if not roll_tracker then return end
     roll_tracker.tie( players, roll_type, roll )
     notify_subscribers( "there_was_a_tie", { players = players, item = item, item_count = item_count, roll_type = roll_type, roll = roll, rerolling = rerolling, top_roll = top_roll } )
     tie_content()
@@ -689,6 +712,7 @@ function M.new(
 
   local function tie_start()
     local roll_tracker = get_roll_tracker( currently_displayed_item and currently_displayed_item.id )
+    if not roll_tracker then return end
     roll_tracker.tie_start()
     local data, iteration = roll_tracker.get()
     notify_subscribers( "tie_start", { tracker_data = data, iteration = iteration } )
@@ -697,6 +721,7 @@ function M.new(
 
   local function rolling_canceled()
     local roll_tracker = get_roll_tracker( currently_displayed_item and currently_displayed_item.id )
+    if not roll_tracker then return end
     roll_tracker.rolling_canceled()
     local data = roll_tracker.get()
     local item = data.item
@@ -713,6 +738,7 @@ function M.new(
 
   local function waiting_for_rolls()
     local roll_tracker = get_roll_tracker( currently_displayed_item and currently_displayed_item.id )
+    if not roll_tracker then return end
     roll_tracker.waiting_for_rolls()
     local data, current_iteration = roll_tracker.get()
     local strategy_type = current_iteration and current_iteration.rolling_strategy
@@ -723,6 +749,7 @@ function M.new(
 
   local function loot_awarded( item_id, item_link, player_name, player_class )
     local roll_tracker = get_roll_tracker( item_id )
+    if not roll_tracker then return end
     roll_tracker.loot_awarded( player_name, item_id )
     if ml_confirmation_data then
       ml_confirmation_data = nil
@@ -758,6 +785,7 @@ function M.new(
     if not currently_displayed_item or not rolling_popup_data[ currently_displayed_item.id ] then return end
     local item_id = currently_displayed_item.id
     local roll_tracker = get_roll_tracker( item_id )
+    if not roll_tracker then return end
     local data = roll_tracker.get()
     if data.status and data.status.type == "Finished" then
       local slot = loot_list.get_slot( item_id )
@@ -779,6 +807,7 @@ function M.new(
     end
     if not currently_displayed_item then return end
     local roll_tracker = get_roll_tracker( currently_displayed_item.id )
+    if not roll_tracker then return end
     if roll_tracker.get().status.type == S.Preview then
       local id = currently_displayed_item.id
       rolling_popup_data[ id ] = nil

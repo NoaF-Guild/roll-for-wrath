@@ -36,14 +36,21 @@ function M.new( awarded_loot, roll_controller, winner_tracker, group_roster, sof
     end
 
     local roll_tracker = rc.get_roll_tracker( item_id )
-    local _, current_iteration = roll_tracker.get()
-    local roll_data = m.find( player_name, current_iteration.rolls, 'player_name' )
+    local current_iteration = nil
+    local roll_data = nil
+    if roll_tracker then
+      local _, iter = roll_tracker.get()
+      current_iteration = iter
+      if current_iteration then
+        roll_data = m.find( player_name, current_iteration.rolls, 'player_name' )
+      end
+    end
     local sr_players = softres.get( item_id )
     local sr_player = m.find( player_name, sr_players, 'name' )
     local rolling_strategy
     local class
 
-    if roll_data then
+    if roll_data and current_iteration then
       rolling_strategy = current_iteration.rolling_strategy
     else
       local winners = winner_tracker.find_winners( item_link )

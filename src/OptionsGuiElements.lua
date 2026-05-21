@@ -143,7 +143,17 @@ function M.create_scroll_frame( parent, name )
     if is_updating then return end
     is_updating = true
     f:SetVerticalScroll( this:GetValue() )
-    f.update_scroll_state()
+    -- update thumb size but do NOT call update_scroll_state (avoids re-entry)
+    local scroll_range = f:GetVerticalScrollRange()
+    local v = f:GetHeight()
+    local r = v + scroll_range
+    if r > 0 and v / r < 1 then
+      local size = math.floor( v * ( v / r ) )
+      f.slider.thumb:SetHeight( size > 10 and size or 10 )
+      f.slider:Show()
+    else
+      f.slider:Hide()
+    end
     is_updating = false
   end )
 
@@ -153,26 +163,28 @@ function M.create_scroll_frame( parent, name )
 
     local scroll_range = f:GetVerticalScrollRange()
     f.slider:SetMinMaxValues( 0, scroll_range )
-    
+
     local current_scroll = f:GetVerticalScroll()
 
-    -- Added a precision check to prevent the 3.3.5a recursion loop
-    if math.abs( f.slider:GetValue() - current_scroll ) > 0.1 then
+    -- Clamp slider value without triggering OnValueChanged re-entry.
+    -- We set is_updating=true above so OnValueChanged will bail immediately.
+    local slider_val = f.slider:GetValue()
+    if math.abs( slider_val - current_scroll ) > 0.1 then
       f.slider:SetValue( current_scroll )
     end
 
     local r = f:GetHeight() + scroll_range
     local v = f:GetHeight()
-    local ratio = v / r
+    local ratio = ( r > 0 ) and ( v / r ) or 1
 
     if ratio < 1 then
       local size = math.floor( v * ratio )
-      f.slider.thumb:SetHeight( size )
+      f.slider.thumb:SetHeight( size > 10 and size or 10 )
       f.slider:Show()
     else
       f.slider:Hide()
     end
-    
+
     is_updating = false
   end
 

@@ -45,7 +45,7 @@ function M.new( api, player_info )
 
     if not api.IsInGroup() then
       local name = player_info.get_name()
-      local class = api.UnitClass( "player" )
+      local _, class = api.UnitClass( "player" )
       table.insert( result, { name = name, class = class } )
 
       return result
