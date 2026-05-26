@@ -220,7 +220,7 @@ local function create_components()
   M.loot_facade_listener = m.LootFacadeListener.new( M.loot_facade, M.auto_loot, M.dropped_loot_announce, M.master_loot, M.auto_group_loot, M.roll_controller, M.player_info )
 
   M.roll_for_broadcast = m.RollForBroadcast.new( M.roll_controller, M.config )
-  M.roll_for_receiver = m.RollForReceiver.new( M.rolling_popup, db( "roll_for_receiver" ) )
+  M.roll_for_receiver = m.RollForReceiver.new( M.rolling_popup, db( "roll_for_receiver" ), M.winner_tracker )
   M.sandbox = m.Sandbox.new()
 end
 

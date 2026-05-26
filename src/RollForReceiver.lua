@@ -11,7 +11,7 @@ local CHANNEL = "RollForSync"
 
 ---@param rolling_popup RollingPopup
 ---@param db table
-function M.new( rolling_popup, db )
+function M.new( rolling_popup, db, winner_tracker )
   ---@diagnostic disable-next-line: undefined-global
   local lib_stub = LibStub
   local ace_comm = lib_stub and lib_stub( "AceComm-3.0", true )
@@ -194,6 +194,12 @@ function M.new( rolling_popup, db )
       } )
       state.strategy_type = payload.strategy
       state.waiting_for_rolls = false
+
+      -- Persist winner to local tracker db
+      if winner_tracker and state.item_link then
+        winner_tracker.track( payload.name, state.item_link, payload.roll_type, payload.roll, payload.strategy )
+      end
+
       refresh()
     end,
 
