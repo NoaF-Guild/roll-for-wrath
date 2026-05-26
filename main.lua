@@ -563,15 +563,37 @@ function M.on_player_login()
   if M.welcome_popup.should_show() then M.welcome_popup.show() end
   LootFrame:UnregisterAllEvents()
 
-  -- Suppress Blizzard's master looter candidate dropdown (3.3.5a).
+  -- Suppress Blizzard's and ElvUI's master looter candidate dropdown (3.3.5a).
   -- On 3.3.5a, clicking a loot slot as ML fires OPEN_MASTER_LOOT_LIST which
-  -- triggers the default GroupLootDropDown. We hook the function that shows it.
-  -- This also prevents ElvUI's loot module from showing its version.
-  if GroupLootDropDown then
-    local old_init = GroupLootDropDown.initialize
-    GroupLootDropDown.initialize = function() end
-    GroupLootDropDown:Hide()
+  -- normally shows a dropdown for player selection. We replace the loot frame
+  -- entirely with our own UI, so we must suppress ALL ML dropdown behavior.
+  --
+  -- Strategy: Hook the global MasterLooterFrame_Show and ToggleDropDownMenu
+  -- specifically for the GroupLootDropDown, and register our own handler for
+  -- OPEN_MASTER_LOOT_LIST that does nothing.
+
+  -- Suppress MasterLooterFrame_Show if it exists (some FrameXML versions)
+  if MasterLooterFrame_Show then
+    MasterLooterFrame_Show = function() end
   end
+
+  -- Suppress MasterLooterFrame if it exists
+  if MasterLooterFrame then
+    MasterLooterFrame:UnregisterAllEvents()
+    MasterLooterFrame:Hide()
+    MasterLooterFrame.Show = function() end
+  end
+
+  -- Register our own OPEN_MASTER_LOOT_LIST handler that hides any dropdown
+  local ml_suppress_frame = m.api.CreateFrame( "Frame" )
+  ml_suppress_frame:RegisterEvent( "OPEN_MASTER_LOOT_LIST" )
+  ml_suppress_frame:RegisterEvent( "UPDATE_MASTER_LOOT_LIST" )
+  ml_suppress_frame:SetScript( "OnEvent", function()
+    -- Hide any dropdown that Blizzard/ElvUI might have shown
+    if CloseDropDownMenus then CloseDropDownMenus() end
+    if GroupLootDropDown then GroupLootDropDown:Hide() end
+    if DropDownList1 then DropDownList1:Hide() end
+  end )
 
   -- Also suppress the group loot roll frames if present
   if GroupLootFrame1 then
