@@ -11,7 +11,9 @@ local CHANNEL = "RollForSync"
 
 ---@param rolling_popup RollingPopup
 ---@param db table
-function M.new( rolling_popup, db, winner_tracker )
+---@param winner_tracker WinnerTracker?
+---@param awarded_loot AwardedLoot?
+function M.new( rolling_popup, db, winner_tracker, awarded_loot )
   ---@diagnostic disable-next-line: undefined-global
   local lib_stub = LibStub
   local ace_comm = lib_stub and lib_stub( "AceComm-3.0", true )
@@ -198,6 +200,13 @@ function M.new( rolling_popup, db, winner_tracker )
       -- Persist winner to local tracker db
       if winner_tracker and state.item_link then
         winner_tracker.track( payload.name, state.item_link, payload.roll_type, payload.roll, payload.strategy )
+      end
+
+      -- Sync to awarded loot so non-ML clients see winners in the popup
+      if awarded_loot and state.item_link then
+        local item_id = IU.get_item_id( state.item_link )
+        local roll_data = { roll_type = payload.roll_type, roll = payload.roll }
+        awarded_loot.award( payload.name, item_id, roll_data, payload.strategy, state.item_link, payload.class )
       end
 
       refresh()
