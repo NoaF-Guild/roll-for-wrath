@@ -332,6 +332,24 @@ function M.new( loot_list, chat, dropped_loot, softres, winner_tracker, player_i
         end
       end
 
+      if config.announce_sr_on_loot() then
+        local summary = M.create_item_summary( items, softres )
+        for _, entry in ipairs( summary ) do
+          if entry.is_hardressed then
+            chat.announce( string.format( "%s is %s.", entry.item.link, m.colors.red( "Hard-Ressed" ) ) )
+          elseif getn( entry.softressers ) > 0 then
+            local names = {}
+            for _, p in ipairs( entry.softressers ) do
+              table.insert( names, m.colorize_player_by_class( p.name, p.class ) )
+            end
+            local who = table.concat( names, ", " )
+            chat.announce( string.format( "%s is %s by %s.", entry.item.link, m.colors.orange( "Soft-Ressed" ), who ) )
+          else
+            chat.announce( string.format( "%s has no Soft-Res.", entry.item.link ) )
+          end
+        end
+      end
+
       announced_source_ids[ source_guid ] = true
     end
 

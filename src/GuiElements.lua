@@ -172,7 +172,7 @@ function M.icon( parent, show, width, height )
   if not show then icon:Hide() end
   icon:SetWidth( width or 16 )
   icon:SetHeight( height or 16 )
-  icon:SetTexture( "Interface\\AddOns\\RollFor\\assets\\icon-white2.tga" )
+  icon:SetTexture( "Interface\\AddOns\\RollFor-WotLK\\assets\\icon-white2.tga" )
 
   return icon
 end
@@ -323,8 +323,8 @@ function M.tiny_button( parent, text, tooltip, color, font_size )
       button:SetNormalTexture( "Interface\\Buttons\\UI-Panel-MinimizeButton-Up" )
       button:SetPushedTexture( "Interface\\Buttons\\UI-Panel-MinimizeButton-Down" )
     else
-      button:SetNormalTexture( "Interface\\AddOns\\RollFor\\assets\\tiny-button-up.tga" )
-      button:SetPushedTexture( "Interface\\AddOns\\RollFor\\assets\\tiny-button-down.tga" )
+      button:SetNormalTexture( "Interface\\AddOns\\RollFor-WotLK\\assets\\tiny-button-up.tga" )
+      button:SetPushedTexture( "Interface\\AddOns\\RollFor-WotLK\\assets\\tiny-button-down.tga" )
     end
     button:GetHighlightTexture():SetTexCoord( .1875, .78125, .21875, .78125 )
     button:GetNormalTexture():SetTexCoord( .1875, .78125, .21875, .78125 )
@@ -403,7 +403,7 @@ function M.resize_grip( parent, on_start, on_end )
   local button = m.api.CreateFrame( "Button", nil, parent )
   button:SetWidth( 16 )
   button:SetHeight( 16 )
-  button:SetNormalTexture( "Interface\\AddOns\\RollFor\\assets\\resize-grip.tga", "ARTWORK" )
+  button:SetNormalTexture( "Interface\\AddOns\\RollFor-WotLK\\assets\\resize-grip.tga", "ARTWORK" )
   button:GetNormalTexture():SetAllPoints( button )
 
   button:SetScript( "OnEnter", function()
@@ -504,7 +504,7 @@ function M.dropdown( anchor_frame, button, items_data, on_select )
   local height = 4
 
   dropdown.items = {}
-  for _, item_data in items_data do
+  for _, item_data in ipairs( items_data ) do
     local item
 
     local function blue_hover( a )
@@ -513,11 +513,11 @@ function M.dropdown( anchor_frame, button, items_data, on_select )
 
     if item_data.type == "checkbox" then
       item = m.GuiElements.checkbox( dropdown, item_data.text, function( is_checked )
-        if this.on_select then
-          this.on_select( this.value, is_checked )
+        if item.on_select then
+          item.on_select( item.value, is_checked )
         end
         if on_select then
-          on_select( this.value, is_checked )
+          on_select( item.value, is_checked )
         end
       end )
       item.value = item_data.value
@@ -539,7 +539,7 @@ function M.dropdown( anchor_frame, button, items_data, on_select )
       item:SetScript( "OnClick", function()
         dropdown:Hide()
         if on_select then
-          on_select( this.value, this.label:GetText() )
+          on_select( item.value, item.label:GetText() )
         end
       end )
     end
@@ -562,8 +562,8 @@ function M.dropdown( anchor_frame, button, items_data, on_select )
   dropdown:SetHeight( height + 5 )
 
   if (anchor_frame and button) then
-    anchor_frame:SetScript( "OnMouseUp", function()
-      if arg1 == button then
+    anchor_frame:SetScript( "OnMouseUp", function( self, mouse_button )
+      if mouse_button == button then
         if dropdown:IsVisible() then
           dropdown:Hide()
         else
@@ -589,7 +589,7 @@ function M.titlebar( parent, title, on_close )
     frame:SetPoint( "TOPLEFT", 3, 2 )
     frame:SetPoint( "RIGHT", -3, 2 )
     frame:SetBackdrop( {
-      bgFile = "Interface\\AddOns\\RollFor\\assets\\titlebar-top.tga",
+      bgFile = "Interface\\AddOns\\RollFor-WotLK\\assets\\titlebar-top.tga",
       tile = true,
       tileSize = 32,
       edgeSize = 0,
@@ -597,13 +597,13 @@ function M.titlebar( parent, title, on_close )
     } )
 
     local topLeft = frame:CreateTexture( nil, "BORDER" )
-    topLeft:SetTexture( "Interface\\AddOns\\RollFor\\assets\\titlebar-topleft.tga" )
+    topLeft:SetTexture( "Interface\\AddOns\\RollFor-WotLK\\assets\\titlebar-topleft.tga" )
     topLeft:SetPoint( "TOPLEFT", frame, "TOPLEFT", 0, 0 )
     topLeft:SetWidth( 64 )
     topLeft:SetHeight( 32 )
 
     local topRight = frame:CreateTexture( nil, "BORDER" )
-    topRight:SetTexture( "Interface\\AddOns\\RollFor\\assets\\titlebar-topright.tga" )
+    topRight:SetTexture( "Interface\\AddOns\\RollFor-WotLK\\assets\\titlebar-topright.tga" )
     topRight:SetPoint( "TOPRIGHT", frame, "TOPRIGHT", 0, 0 )
     topRight:SetWidth( 64 )
     topRight:SetHeight( 32 )
@@ -642,7 +642,7 @@ function M.info( parent )
   local icon = frame:CreateTexture( nil, "BACKGROUND" )
   icon:SetWidth( 11 )
   icon:SetHeight( 11 )
-  icon:SetTexture( "Interface\\AddOns\\RollFor\\assets\\info.tga" )
+  icon:SetTexture( "Interface\\AddOns\\RollFor-WotLK\\assets\\info.tga" )
   icon:SetPoint( "CENTER", 0, 0 )
 
   frame:SetScript( "OnEnter", function( self )

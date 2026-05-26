@@ -371,7 +371,7 @@ function M.new( popup_builder, frame_builder, db, awarded_loot, roll_controller,
       local sr_plus = ""
 
       if not frame then
-        error( "Row frame is empty!" )
+        M.debug.add( "update_row: frame is nil, skipping row" )
         return
       end
 

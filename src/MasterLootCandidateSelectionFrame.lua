@@ -16,7 +16,8 @@ local vertical_padding = 5
 local mod, getn = m.mod, m.getn
 
 local function highlight( frame )
-  frame:SetBackdropColor( frame.color.r, frame.color.g, frame.color.b, 0.3 )
+  local color = frame.color or { r = 1, g = 1, b = 1 }
+  frame:SetBackdropColor( color.r, color.g, color.b, 0.3 )
 end
 
 local function dim( frame )
@@ -24,7 +25,8 @@ local function dim( frame )
 end
 
 local function press( frame )
-  frame:SetBackdropColor( frame.color.r, frame.color.g, frame.color.b, 0.7 )
+  local color = frame.color or { r = 1, g = 1, b = 1 }
+  frame:SetBackdropColor( color.r, color.g, color.b, 0.7 )
 end
 
 ---@param frame_builder FrameBuilderFactory
@@ -100,7 +102,7 @@ local function create_button( parent, index, rows )
   icon:SetPoint( "LEFT", text, "RIGHT", 2, 0 )
   icon:SetWidth( 13 )
   icon:SetHeight( 12 )
-  icon:SetTexture( string.format( "Interface\\AddOns\\RollFor\\assets\\star-%s.tga", "gold" ) )
+  icon:SetTexture( string.format( "Interface\\AddOns\\RollFor-WotLK\\assets\\star-%s.tga", "gold" ) )
   icon:Hide()
   frame.icon = icon
 
@@ -193,8 +195,8 @@ function M.new( frame_builder, config )
 
       local button = m_buttons[ i ]
       button.text:SetText( candidate.name )
-      local color = m.api.RAID_CLASS_COLORS[ string.upper( candidate.class ) ]
-      button.color = color
+      local color = m.api.RAID_CLASS_COLORS[ string.upper( candidate.class or "" ) ]
+      button.color = color  -- may be nil; highlight/press use inline fallback
       button.player = candidate
 
       if color then
@@ -202,6 +204,7 @@ function M.new( frame_builder, config )
         dim( button )
       else
         button.text:SetTextColor( 1, 1, 1 )
+        dim( button )
       end
 
       button:SetScript( "OnClick", candidate.confirm_fn )

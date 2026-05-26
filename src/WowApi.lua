@@ -13,5 +13,22 @@ M.LootInterface = {
   GetLootSlotType = "function"
 }
 
+M.GameApiInterface = {
+  GetNumLootItems = "function",
+  GetLootSlotLink = "function",
+  GetLootSlotInfo = "function",
+  GetLootSlotType = "function",
+  LootSlot = "function",
+  UnitGUID = "function",
+  UnitName = "function",
+  UnitClass = "function",
+  GetLootMethod = "function",
+  GetMasterLootCandidate = "function",
+  GetRaidRosterInfo = "function",
+  UnitIsPartyLeader = "function",
+  IsInRaid = "function",
+  IsInGroup = "function",
+}
+
 m.WowApi = M
 return M

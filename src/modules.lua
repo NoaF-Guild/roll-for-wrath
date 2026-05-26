@@ -145,6 +145,7 @@ if M.api.RAID_CLASS_COLORS then
   M.api.RAID_CLASS_COLORS.DRUID.colorStr = "ffff7d0a"
   M.api.RAID_CLASS_COLORS.SHAMAN.colorStr = "ff0070de"
   M.api.RAID_CLASS_COLORS.WARRIOR.colorStr = "ffc79c6e"
+  M.api.RAID_CLASS_COLORS.DEATHKNIGHT.colorStr = "ffc41e3a"
 end
 
 function M.print( message )
@@ -458,14 +459,21 @@ function M.colorize_item_by_quality( item_name, quality )
   return color .. item_name .. M.api.FONT_COLOR_CODE_CLOSE
 end
 
-function M.colorize_player_by_class( name, class )
-  if not class then return name end
-  local color = M.api.RAID_CLASS_COLORS[ string.upper( class ) ].colorStr
-  if not color then
-    local c = M.api.RAID_CLASS_COLORS[ string.upper( class ) ]
-    color = string.format( "ff%02x%02x%02x", c.r * 255, c.g * 255, c.b * 255 )
-  end
-  return "|c" .. color .. name .. M.api.FONT_COLOR_CODE_CLOSE
+function M.colorize_player_by_class(name, class)
+    if not class then
+        return name
+    end
+
+    local cl = string.upper(string.gsub(class, "%W", ""))
+    if cl == nil or cl == '' then
+        return name
+    end
+
+    local color = M.api.RAID_CLASS_COLORS[cl]
+    if color == nil then
+        return name
+    end
+    return "|c" .. color.colorStr .. name .. M.api.FONT_COLOR_CODE_CLOSE
 end
 
 local base64_chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/' -- You will need this for encoding/decoding
@@ -502,21 +510,39 @@ function M.encode_base64( data )
 end
 
 function M.get_addon_version()
-  local version = M.api.GetAddOnMetadata( "RollFor", "Version" )
-  local major, minor = string.match( version, "(%d+)%.(%d+)" )
-
-  local result = {
-    str = version,
-    major = tonumber( major ),
-    minor = tonumber( minor )
-  }
-
-  if not version or not result.major or not result.minor then
-    error( "Invalid RollFor addon version!" )
-    return
-  end
-
-  return result
+    -- Attempt to get the version safely
+    local version_str = GetAddOnMetadata("RollFor", "Version") 
+                     or GetAddOnMetadata("RollFor-WotLK", "Version") 
+                     or GetAddOnMetadata("RollFor_WotLK", "Version")
+    
+    -- Hard fallback so it never returns nil
+    if not version_str then
+        version_str = "4.8.2"
+    end
+    
+    local major, minor, patch = string.match(version_str, "(%d+)%.(%d+)%.(%d+)")
+    
+    local v = {}
+    if not major then
+        v = { major = 0, minor = 0, patch = 0, str = version_str, string = version_str }
+    else
+        v = {
+            major = tonumber(major),
+            minor = tonumber(minor),
+            patch = tonumber(patch),
+            str = version_str,
+            string = version_str
+        }
+    end
+    
+    -- Tell Lua how to safely print this table if string.format requests it
+    setmetatable(v, {
+        __tostring = function(self)
+            return self.str
+        end
+    })
+    
+    return v
 end
 
 function M.clear_table( t )
@@ -550,24 +576,11 @@ function M.roll_type_color( roll_type, text )
     return M.colors.pink( text or "transmog" )
   elseif roll_type == M.Types.RollType.SoftRes then
     return M.colors.orange( text or "soft-res" )
+  elseif roll_type == M.Types.RollType.TieRoll then
+    return M.colors.blue( text or "tie" )
   else
-    return M.colors.white( text or "PrincessKenny" )
-  end
-end
-
-function M.roll_type_abbrev_chat( roll_type )
-  if roll_type == M.Types.RollType.MainSpec then
-    return "MS"
-  elseif roll_type == M.Types.RollType.OffSpec then
-    return "OS"
-  elseif roll_type == M.Types.RollType.Transmog then
-    return "TMOG"
-  elseif roll_type == M.Types.RollType.SoftRes then
-    return "SR"
-  elseif roll_type == M.Types.RollType.RaidRoll then
-    return "RR"
-  else
-    error( string.format( "RollType %s not handled.", roll_type ) )
+    M.debug.add( string.format( "roll_type_color: unknown roll_type: %s", tostring( roll_type ) ) )
+    return M.colors.white( text or string.format( "UNKNOWN (%s)", tostring( roll_type ) ) )
   end
 end
 
@@ -582,9 +595,11 @@ function M.roll_type_abbrev( roll_type )
     return "SR"
   elseif roll_type == M.Types.RollType.RaidRoll then
     return "RR"
+  elseif roll_type == M.Types.RollType.TieRoll then
+    return "Tie"
   else
-    error( string.format( "RollType %s not handled.", roll_type ) )
-    return M.colors.white( roll_type )
+    M.debug.add( string.format( "roll_type_abbrev: unknown roll_type: %s", tostring( roll_type ) ) )
+    return string.format( "UNKNOWN (%s)", tostring( roll_type ) )
   end
 end
 

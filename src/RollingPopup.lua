@@ -182,7 +182,7 @@ function M.new( popup_builder, content_transformer, db, config )
           frame:SetText( v.value )
         elseif type == "roll" then
           local roll_type_text = m.roll_type_abbrev( v.roll_type )
-          if v.roll_type == RollType.MainSpec and v.plus_ones > 0 then
+          if v.roll_type == RollType.MainSpec and (v.plus_ones or 0) > 0 then
             roll_type_text = roll_type_text .. " +" .. v.plus_ones
           end
           frame.roll_type:SetText( m.roll_type_color( v.roll_type, roll_type_text ) )
@@ -305,7 +305,7 @@ function M.new( popup_builder, content_transformer, db, config )
   end
 
   local function ping()
-    if m.vanilla then
+    if m.vanilla or m.wotlk then
       m.api.PlaySound( "igMainMenuOpen" )
     else
       m.api.PlaySound( m.api.SOUNDKIT.IG_MAINMENU_OPEN )

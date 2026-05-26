@@ -7,6 +7,7 @@ local item_utils = m.ItemUtils
 local info = m.pretty_print
 local hl = m.colors.hl
 local grey = m.colors.grey
+local interface = m.Interface
 
 local M = {}
 local getn = m.getn
@@ -17,8 +18,6 @@ M.interface = {
 }
 
 local button_visible = false
-local _G = getfenv( 0 )
-
 ---@class AutoLoot
 ---@field is_auto_looted fun( item: DroppedItem ): boolean
 ---@field on_loot_opened fun()
@@ -31,7 +30,9 @@ local _G = getfenv( 0 )
 ---@param api function
 ---@param db table
 ---@param config Config
-function M.new( loot_list, api, db, config, player_info )
+---@param game_api GameApi
+function M.new( loot_list, api, db, config, player_info, game_api )
+  interface.validate( game_api, m.GameApi.interface )
   db.items = db.items or {}
 
   local frame
@@ -39,18 +40,10 @@ function M.new( loot_list, api, db, config, player_info )
 
   local function find_my_candidate_index( slot )
     for i = 1, 40 do
-      if m.vanilla then
-        local name = m.api.GetMasterLootCandidate( i )
+      local name = game_api.get_master_loot_candidate( slot, i )
 
-        if name == api().UnitName( "player" ) then
-          return i
-        end
-      else
-        local name = m.api.GetMasterLootCandidate( slot, i )
-
-        if name == api().UnitName( "player" ) then
-          return i
-        end
+      if name == api().UnitName( "player" ) then
+        return i
       end
     end
   end
@@ -207,7 +200,7 @@ function M.new( loot_list, api, db, config, player_info )
   end
 
   local function loot_item( slot )
-    local index = find_my_candidate_index()
+    local index = find_my_candidate_index( slot )
 
     if index then
       api().GiveMasterLoot( slot, index )

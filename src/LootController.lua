@@ -239,11 +239,12 @@ function M.new( player_info, loot_facade, loot_list, loot_frame, roll_controller
             return
           end
 
-          if m.bcc and (is_coin or item.quality < 2) then
-            local slot = loot_list.get_slot( item.id )
-            if slot then loot_facade.loot_slot( slot ) end
-            return
-          end
+      -- Added a nil-check for item.quality to prevent 3.3.5a crashes
+    if (m.bcc or m.wotlk) and (is_coin or (item.quality and item.quality < 2)) then
+      local slot = loot_list.get_slot( item.id )
+      if slot then loot_facade.loot_slot( slot ) end
+      return
+    end
 
           if rolling_logic.is_rolling() then
             chat.info( "Cannot select item while rolling is in progress.", m.colors.red )

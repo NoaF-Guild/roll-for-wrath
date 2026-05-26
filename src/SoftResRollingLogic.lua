@@ -179,7 +179,15 @@ function M.new(
   ---@param min number
   ---@param max number
   local function on_roll( roller, roll, min, max )
-    if not rolling or min ~= 1 then return end
+    if not rolling then return end
+
+    if min ~= 1 then
+      local player = find_player( roller.name )
+      local class = player and player.class or roller.class
+      chat.info( string.format( "Ignored invalid roll from %s (Expected min 1, got %s).", roller.name, min ) )
+      controller.roll_was_ignored( roller.name, class, roll_type, roll, "Invalid roll boundaries." )
+      return
+    end
 
     local player = find_player( roller.name )
 
@@ -210,7 +218,7 @@ function M.new(
 
     player.rolls = player.rolls - 1
     table.insert( rolls, make_roll( player, roll_type, roll ) )
-    controller.roll_was_accepted( player.name, player.class, roll_type, roll )
+    controller.roll_was_accepted( player.name, player.class, roll_type, roll, player.plus_ones )
 
     find_winner( State.AfterRoll )
   end
@@ -233,7 +241,7 @@ function M.new(
 
   local function accept_rolls()
     rolling = true
-    timer = ace_timer.ScheduleRepeatingTimer( M, on_timer, 1.7 )
+    timer = ace_timer:ScheduleRepeatingTimer( on_timer, 1 )
   end
 
   local function format_name_with_rolls( player )

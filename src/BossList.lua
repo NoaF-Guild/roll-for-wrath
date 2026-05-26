@@ -12,13 +12,44 @@ M.zones    = {
   [ "Durotar" ] = {
     "Elder Mottled Boar"
   },
+  [ "Emerald Sanctum" ] = {
+    "Erennius",
+    "Solnius"
+  },
   [ "Tower of Karazhan" ] = {
+    "Keeper Gnarlmoon",
+    "Ley-Watcher Incantagos",
+    "Anomalus",
+    "Echo of Medivh",
+    "King",
+    "Queen",
+    "Bishop",
+    "Rook",
+    "Ima'ghaol, Herald of Desolation",
+    "Sanv Tas'dal",
+    "Rupturan the Broken",
+    "Kruul",
+    "Mephistroth"
+  },
+  [ "Lower Karazhan Halls" ] = {
     "Master Blacksmith Rolfen",
     "Brood Queen Araxxna",
     "Grizikil",
     "Clawlord Howlfang",
     "Lord Blackwald II",
     "Moroes"
+  },
+  [ "Timbermaw Hold" ] = {
+    "Karrsh the Sentinel",
+    "Rotgrowl",
+    "Archdruid Kronn",
+    "Loktanag the Vile",
+    "Ormanos the Cracked",
+    "Trioch the Devourer",
+    "Selenaxx Foulheart",
+    "Chieftain Partath",
+    "Ursol",
+    "Peroth'arn"
   },
   [ "Zul'Gurub" ] = {
     "High Priestess Jeklik",
@@ -49,6 +80,10 @@ M.zones    = {
     "Ossirian the Unscarred"
   },
   [ "Molten Core" ] = {
+    "Incindis",
+    "Basalthar",
+    "Smoldaris",
+    "Sorcerer-Thane Thaurissan",
     "Lucifron",
     "Magmadar",
     "Gehennas",
@@ -61,6 +96,7 @@ M.zones    = {
     "Ragnaros"
   },
   [ "Blackwing Lair" ] = {
+    "Ezzel Darkbrewer",
     "Razorgore the Untamed",
     "Vaelastrasz the Corrupt",
     "Broodlord Lashlayer",
@@ -71,14 +107,17 @@ M.zones    = {
     "Nefarian"
   },
   [ "Onyxia's Lair" ] = {
-    "Onyxia"
+	"Onyxia",
+	"Broodcommander Axelus",
+	"Atressian",
+	"Ortorg the Ardent"
   },
-  [ "Temple of Ahn'Qiraj" ] = {
+  [ "Ahn'Qiraj" ] = {
     "The Prophet Skeram",
     "Vem",
     "Lord Kri",
     "Princess Yauj",
-    "Battle Guard Sartura",
+    "Battleguard Sartura",
     "Fankriss the Unyielding",
     "Viscidus",
     "Princess Huhuran",

@@ -10,6 +10,7 @@ local M = m.Module.new( "LootAwardCallback" )
 
 ---@class LootAwardCallback
 ---@field on_loot_awarded fun( item_id: number, item_link: string, player_name: string, player_class: string?, is_trade: boolean? )
+---@field set_roll_controller fun( controller: RollController )
 
 ---@param awarded_loot AwardedLoot
 ---@param roll_controller RollController
@@ -19,21 +20,40 @@ local M = m.Module.new( "LootAwardCallback" )
 ---@param confirm_popup ConfirmPopup
 ---@param config Config
 function M.new( awarded_loot, roll_controller, winner_tracker, group_roster, softres, confirm_popup, config )
+  -- Internal reference that will be updated by the setter
+  local rc = roll_controller
+
   ---@param item_id number
   ---@param item_link string
   ---@param player_name string
   ---@param player_class PlayerClass?
   local function on_loot_awarded( item_id, item_link, player_name, player_class, is_trade )
     M.debug.add( string.format( "on_loot_awarded( %s, %s, %s, %s )", item_id, item_link, player_name, player_class or "nil" ) )
-    local roll_tracker = roll_controller.get_roll_tracker( item_id )
-    local _, current_iteration = roll_tracker.get()
-    local roll_data = m.find( player_name, current_iteration.rolls, 'player_name' )
+    
+    if not rc then
+      m.err("LootAwardCallback: rc (roll_controller) is nil. Ensure set_roll_controller is called.")
+      return
+    end
+
+    local roll_tracker = rc.get_roll_tracker( item_id )
+    local current_iteration = nil
+    local roll_data = nil
+    if roll_tracker then
+      local _, iter = roll_tracker.get()
+      current_iteration = iter
+      if current_iteration then
+        roll_data = m.find( player_name, current_iteration.rolls, 'player_name' )
+      end
+    end
     local sr_players = softres.get( item_id )
-    local sr_player = m.find( player_name, sr_players, 'name' )
+    local sr_player = nil
+    if sr_players then
+      sr_player = m.find( player_name, sr_players, 'name' )
+    end
     local rolling_strategy
     local class
 
-    if roll_data then
+    if roll_data and current_iteration then
       rolling_strategy = current_iteration.rolling_strategy
     else
       local winners = winner_tracker.find_winners( item_link )
@@ -46,24 +66,20 @@ function M.new( awarded_loot, roll_controller, winner_tracker, group_roster, sof
       class = player and player.class or nil
     end
 
-      awarded_loot.award(
-        player_name,
-        item_id,
-        roll_data,
-        rolling_strategy,
-        item_link,
-        player_class or class,
-        sr_player and sr_player.sr_plus,
-        false
-      )
+    awarded_loot.award(
+      player_name,
+      item_id,
+      roll_data,
+      rolling_strategy,
+      item_link,
+      player_class or class,
+      sr_player and sr_player.sr_plus,
+      false
+    )
   
     if is_trade then return end
 
-    if player_class then
-      roll_controller.loot_awarded( item_id, item_link, player_name, player_class )
-    else
-      roll_controller.loot_awarded( item_id, item_link, player_name, class )
-    end
+    rc.loot_awarded( item_id, item_link, player_name, player_class or class )
 
     winner_tracker.untrack( player_name, item_link )
 
@@ -82,13 +98,16 @@ function M.new( awarded_loot, roll_controller, winner_tracker, group_roster, sof
       on_confirm_plus_one(false)
     end
   end
-  ---@type LootAwardCallback
+
+  local function set_roll_controller( controller )
+    rc = controller
+  end
+
   return {
     on_loot_awarded = on_loot_awarded,
+    set_roll_controller = set_roll_controller
   }
 end
 
 m.LootAwardCallback = M
 return M
-
-

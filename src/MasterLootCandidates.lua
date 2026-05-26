@@ -4,6 +4,7 @@ local m = RollFor
 if m.MasterLootCandidates then return end
 
 local M = {}
+local interface = m.Interface
 
 ---@type MakeItemCandidateFn
 local make_item_candidate = m.Types.make_item_candidate
@@ -30,49 +31,36 @@ local function get_dummy_candidates()
   }
 end
 
----@class MasterLootCandidatesApi
----@field GetMasterLootCandidate fun( slot: number, index: number ): string
-
 ---@class MasterLootCandidates
 ---@field get fun( slot: number ): ItemCandidate[]
 ---@field find fun( slot: number, player_name: string ): ItemCandidate?
 ---@field get_index fun( slot: number, player_name: string ): number?
 ---@field transform_to_winner fun( player: RollingPlayer, item: Item|MasterLootDistributableItem, roll_type: RollType, winning_roll: number?, rerolling: boolean? ): Winner
 
----@param api MasterLootCandidatesApi
+---@param game_api GameApi
 ---@param group_roster GroupRoster
 ---@param loot_list LootList
-function M.new( api, group_roster, loot_list )
-  local function get( slot )
+function M.new( game_api, group_roster, loot_list )
+  interface.validate( game_api, m.GameApi.interface )
+    local function get( slot )
     if not group_roster then return get_dummy_candidates() end
 
     local result = {}
     local players = group_roster.get_all_players_in_my_group()
 
     for i = 1, 40 do
-      -- There's probably a better way of separating the APIs. For now I'm leaving it like this.
-      if m.vanilla then
-        ---@diagnostic disable-next-line: missing-parameter
-        local name = api.GetMasterLootCandidate( i )
+      local name = game_api.get_master_loot_candidate( slot, i )
 
-        for _, p in ipairs( players ) do
-          if name == p.name then
-            table.insert( result, make_item_candidate( name, p.class, p.online ) )
-          end
-        end
-      else
-        local name = api.GetMasterLootCandidate( slot, i )
-
-        for _, p in ipairs( players ) do
-          if name == p.name then
-            table.insert( result, make_item_candidate( name, p.class, p.online ) )
-          end
+      for _, p in ipairs( players ) do
+        if name == p.name then
+          table.insert( result, make_item_candidate( name, p.class, p.online ) )
         end
       end
     end
 
     return result
   end
+
 
   local function find( slot, player_name )
     local candidates = get( slot )
@@ -87,21 +75,16 @@ function M.new( api, group_roster, loot_list )
   ---@param rerolling boolean?
   ---@return Winner
   local function transform_to_winner( player, item, roll_type, winning_roll, rerolling )
-    local slot = loot_list.get_slot( item.id )
+    -- Prioritize an explicit slot if you attach one in LootList.lua, otherwise fallback
+    local slot = item.slot or loot_list.get_slot( item.id )
     local candidate = slot and find( slot, player.name )
     return make_winner( player.name, player.class, item, candidate and true or false, roll_type, winning_roll and winning_roll, rerolling )
   end
 
-  local function get_index( slot, player_name )
+    local function get_index( slot, player_name )
     for i = 1, 40 do
-      if m.vanilla then
-        ---@diagnostic disable-next-line: missing-parameter
-        local name = api.GetMasterLootCandidate( i )
-        if name == player_name then return i end
-      else
-        local name = api.GetMasterLootCandidate( slot, i )
-        if name == player_name then return i end
-      end
+      local name = game_api.get_master_loot_candidate( slot, i )
+      if name == player_name then return i end
     end
   end
 

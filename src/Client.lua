@@ -252,6 +252,10 @@ function M.new( ace_timer, player_info, rolling_popup, config )
 
   local function on_command( command, data )
     if command == "START_ROLL" then
+      rolling_popup.hide()
+      show_rolling = false
+      player_can_roll = false
+
       if getn( data.softressing_players ) == 0 then
         data.strategy_type = RS.NormalRoll
         player_can_roll = true

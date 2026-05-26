@@ -32,7 +32,7 @@ function M.handle_events( main )
 
     if not init then return end
 
-    if event == "GROUP_ROSTER_UPDATE" or event == "PARTY_MEMBERS_CHANGED" then
+    if event == "GROUP_ROSTER_UPDATE" or event == "PARTY_MEMBERS_CHANGED" or event == "RAID_ROSTER_UPDATE" then
       main.version_broadcast.on_group_changed()
       main.on_group_changed()
       main.new_group_event.on_group_changed()
@@ -45,6 +45,8 @@ function M.handle_events( main )
       main.roll_for_ad.on_chat_msg_raid( arg1, arg2 )
     elseif event == "CHAT_MSG_WHISPER_INFORM" then
       main.roll_for_ad.on_chat_msg_whisper_inform( arg1, arg2 )
+    elseif event == "CHAT_MSG_WHISPER" then
+      main.sr_listener.on_chat_msg_whisper( arg1, arg2 )
     elseif event == "CHAT_MSG_SYSTEM" then
       main.on_chat_msg_system( arg1, arg2, arg3, arg4, arg5 )
     elseif event == "CHAT_MSG_ADDON" then
@@ -87,16 +89,15 @@ function M.handle_events( main )
   local frame = m.api.CreateFrame( "FRAME", "RollForFrame" )
 
   frame:RegisterEvent( "PLAYER_LOGIN" )
-  frame:RegisterEvent( "GROUP_JOINED" )
-  frame:RegisterEvent( "GROUP_LEFT" )
-  frame:RegisterEvent( "GROUP_FORMED" )
+  -- GROUP_JOINED/LEFT/FORMED are Cataclysm+ events and do not exist in WotLK 3.3.5a.
+  -- Group roster changes are handled via GROUP_ROSTER_UPDATE registered below.
   frame:RegisterEvent( "CHAT_MSG_SYSTEM" )
   frame:RegisterEvent( "CHAT_MSG_ADDON" )
   frame:RegisterEvent( "CHAT_MSG_PARTY" )
   frame:RegisterEvent( "CHAT_MSG_RAID" )
   frame:RegisterEvent( "CHAT_MSG_RAID_LEADER" )
   frame:RegisterEvent( "CHAT_MSG_WHISPER_INFORM" )
-  frame:RegisterEvent( "OPEN_MASTER_LOOT_LIST" )
+  frame:RegisterEvent( "CHAT_MSG_WHISPER" )
   frame:RegisterEvent( "TRADE_SHOW" )
   frame:RegisterEvent( "TRADE_PLAYER_ITEM_CHANGED" )
   frame:RegisterEvent( "TRADE_TARGET_ITEM_CHANGED" )
@@ -110,8 +111,12 @@ function M.handle_events( main )
 
   if m.vanilla then
     frame:RegisterEvent( "PARTY_MEMBERS_CHANGED" )
+  elseif m.wotlk then
+    -- WotLK 3.3.5a: GROUP_ROSTER_UPDATE does not exist (Cataclysm+).
+    -- Use PARTY_MEMBERS_CHANGED for party and RAID_ROSTER_UPDATE for raid.
+    frame:RegisterEvent( "PARTY_MEMBERS_CHANGED" )
+    frame:RegisterEvent( "RAID_ROSTER_UPDATE" )
   else
-    -- BCC and WotLK both use GROUP_ROSTER_UPDATE
     frame:RegisterEvent( "GROUP_ROSTER_UPDATE" )
   end
 

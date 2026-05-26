@@ -39,8 +39,8 @@ M.interface = {
 ---| "LootSlotCleared"
 ---| "ChatMsgLoot"
 
-function M.new( event_frame, api )
-  interface.validate( api, m.WowApi.LootInterface )
+function M.new( event_frame, game_api )
+  interface.validate( game_api, m.GameApi.interface )
 
   ---@param event_name LootEventName
   ---@param callback fun()
@@ -58,61 +58,41 @@ function M.new( event_frame, api )
 
   ---@return number
   local function get_item_count()
-    return api.GetNumLootItems()
+    return game_api.get_num_loot_items()
   end
 
   ---@return string?
   local function get_source_guid()
-    return m.UnitGUID( api, "target" )
+    return game_api.get_loot_source_guid()
   end
 
   ---@param slot number
   ---@return ItemLink?
   local function get_link( slot )
-    return api.GetLootSlotLink( slot )
+    return game_api.get_loot_slot_link( slot )
   end
 
   ---@param slot number
   ---@return LootSlotInfo?
   local function get_info( slot )
-    if m.vanilla then
-      local texture, name, quantity, quality = api.GetLootSlotInfo( slot )
-
-      return texture and {
-        texture = texture,
-        name = name,
-        quantity = quantity,
-        quality = quality
-      } or nil
-    else
-      local texture, name, quantity, _, quality = api.GetLootSlotInfo( slot )
-
-      return texture and {
-        texture = texture,
-        name = name,
-        quantity = quantity,
-        quality = quality
-      } or nil
-    end
+    return game_api.get_loot_slot_info( slot )
   end
 
   ---@param slot number
   ---@return boolean
   local function is_item( slot )
-    local slot_type = api.GetLootSlotType( slot )
-    return slot_type == api.LOOT_SLOT_ITEM
+    return game_api.is_loot_slot_item( slot )
   end
 
   ---@param slot number
   ---@return boolean
   local function is_coin( slot )
-    local slot_type = api.GetLootSlotType( slot )
-    return slot_type == api.LOOT_SLOT_MONEY
+    return game_api.is_loot_slot_coin( slot )
   end
 
   ---@param slot number
   local function loot_slot( slot )
-    api.LootSlot( slot )
+    game_api.loot_slot( slot )
   end
 
   ---@type LootFacade

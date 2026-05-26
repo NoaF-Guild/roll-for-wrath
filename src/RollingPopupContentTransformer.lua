@@ -32,7 +32,9 @@ M.button_definitions = {
   [ "Roll" ] = button_definition( "Roll", 60 ),
   [ "MSRoll" ] = button_definition( "Roll MS", 70 ),
   [ "OSRoll" ] = button_definition( "Roll OS", 70 ),
-  [ "TMOGRoll" ] = button_definition( "Roll TMOG", 70 )
+  [ "TMOGRoll" ] = button_definition( "Roll TMOG", 70 ),
+  [ "ARFRoll" ] = button_definition( "Open Roll", 80 ),
+  [ "SRRoll" ] = button_definition( "SR Roll", 70 ),
 }
 
 local top_padding = 11
@@ -47,6 +49,8 @@ local top_padding = 11
 ---| "Close"
 ---| "FinishEarly"
 ---| "Cancel"
+---| "ARFRoll"
+---| "SRRoll"
 
 ---@class RollingPopupContentTransformer
 ---@field transform fun( data: RollingPopupData ): table
