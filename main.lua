@@ -221,6 +221,7 @@ local function create_components()
 
   M.roll_for_broadcast = m.RollForBroadcast.new( M.roll_controller, M.config )
   M.roll_for_receiver = m.RollForReceiver.new( M.rolling_popup, db( "roll_for_receiver" ), M.winner_tracker )
+  M.self_test = m.SelfTest.new( M.game_api, M.player_info )
   M.sandbox = m.Sandbox.new()
 end
 
@@ -297,6 +298,16 @@ local function on_roll_command( roll_slash_command )
 
     if args == "versioncheck" then
       M.version_broadcast.group_version_request()
+      return
+    end
+
+    if args == "apicheck" then
+      M.self_test.apicheck()
+      return
+    end
+
+    if args == "commtest" then
+      M.self_test.commtest()
       return
     end
 

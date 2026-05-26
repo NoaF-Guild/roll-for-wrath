@@ -101,5 +101,6 @@ src\ModernLootFrameSkin.lua
 src\OgLootFrameSkin.lua
 src\RollForBroadcast.lua
 src\RollForReceiver.lua
+src\SelfTest.lua
 
 main.lua

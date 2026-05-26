@@ -258,6 +258,11 @@ function M.new( rolling_popup, db, winner_tracker )
         } )
       end
       state = nil
+    end,
+
+    RF_PING = function( payload )
+      print( string.format( "|cff44ff44COMMS OK|r Received RF_PING from %s (ts=%s)",
+        tostring( payload.sender ), tostring( payload.timestamp ) ) )
     end
   }
 
