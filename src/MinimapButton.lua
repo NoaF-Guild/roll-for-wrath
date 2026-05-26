@@ -91,6 +91,8 @@ function M.new( api, db, manage_softres_fn, winners_popup_fn, options_popup_fn, 
         api().GameTooltip:AddLine( string.format( "%s %s - %s", hl( "/arf" ), grey( "<item>" ), white( "roll for (ignore SR)" ) ) )
         api().GameTooltip:AddLine( string.format( "%s %s %s - %s", hl( "/rf" ), grey( "<item>" ), grey( "<seconds>" ), white( "roll with custom time" ) ) )
         api().GameTooltip:AddLine( string.format( "%s - %s", hl( "/sr" ), white( "manage softres" ) ) )
+        api().GameTooltip:AddLine( string.format( "%s %s %s - %s", hl( "/sr add" ), grey( "<player>" ), grey( "<item>" ), white( "add SR for player" ) ) )
+        api().GameTooltip:AddLine( string.format( "%s %s %s - %s", hl( "/sr rm" ), grey( "<player>" ), grey( "<item>" ), white( "remove SR for player" ) ) )
         api().GameTooltip:AddLine( string.format( "%s - %s", hl( "/sro" ), white( "fix player softres name" ) ) )
         api().GameTooltip:AddLine( string.format( "%s - %s", hl( "/src" ), white( "check softres status" ) ) )
         api().GameTooltip:AddLine( string.format( "%s - %s", hl( "/srs" ), white( "show softres items" ) ) )
