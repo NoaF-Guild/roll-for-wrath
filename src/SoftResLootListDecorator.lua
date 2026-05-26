@@ -62,8 +62,6 @@ function M.new( loot_list, softres )
     local hr_map = {}
 
     local result = m.map( loot_list.get_items(), function( item )
-      if type( item ) ~= "table" then return item end -- Fucking lua50 and its "n".
-
       if item.type == LT.Coin then
         return item
       end

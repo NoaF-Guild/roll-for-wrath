@@ -192,8 +192,6 @@ local function create_import_frame( api, on_import, on_clear, on_cancel, on_dirt
   local sr_website
   if realm == "Kezan" or realm == "Gurubashi" then
     sr_website = "softres.epoglogs.com"
-  elseif m.vanilla then
-    sr_website = "raidres.fly.dev"
   else
     sr_website = "    softres.it"
   end

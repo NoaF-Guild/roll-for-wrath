@@ -125,9 +125,7 @@ function M.new( chat, roll_controller, softres, config )
 
     local player_names = m.map( players,
       function( p )
-        if type( p ) == "table" then -- Fucking lua50 and its n.
-          return p.name
-        end
+        return p.name
       end )
 
     local top_rollers_str = m.prettify_table( player_names )

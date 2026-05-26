@@ -137,11 +137,8 @@ function M.new( db, event_bus )
     info( string.format( "Roll thresholds: %s %s, %s %s%s", hl( "MS" ), ms_threshold, hl( "OS" ), os_threshold, tmog_info ) )
   end
 
-  local function print_transmog_rolling_setting( show_threshold )
-    if m.bcc or m.wotlk then return end  -- Transmog rolling is Vanilla-only
-    local tmog_rolling_enabled = db.tmog_rolling_enabled
-    local threshold = show_threshold and tmog_rolling_enabled and string.format( " (%s)", hl( db.tmog_roll_threshold ) ) or ""
-    info( string.format( "Transmog rolling is %s%s.", tmog_rolling_enabled and m.msg.enabled or m.msg.disabled, threshold ) )
+  local function print_transmog_rolling_setting()
+    -- Transmog rolling is Vanilla-only; no-op on WotLK
   end
 
   local function print_default_rolling_time()
@@ -315,10 +312,7 @@ function M.new( db, event_bus )
     m.print( string.format( "%s - show OS rolling threshold ", rfc( "os" ) ) )
     m.print( string.format( "%s %s - set OS rolling threshold ", rfc( "os" ), v( "threshold" ) ) )
 
-    if m.vanilla then  -- TMOG rolling is Vanilla-only; not available on BCC or WotLK
-      m.print( string.format( "%s - toggle TMOG rolling", rfc( "tmog" ) ) )
-      m.print( string.format( "%s %s - set TMOG rolling threshold", rfc( "tmog" ), v( "threshold" ) ) )
-    end
+    -- TMOG rolling is Vanilla-only; not available on WotLK
 
     for _, setting in pairs( toggles ) do
       if not setting.hidden and not setting.client then
@@ -477,7 +471,7 @@ function M.new( db, event_bus )
   ---@param expansion Expansion?
   ---@param not_available_value any?
   local function get( setting_key, expansion, not_available_value )
-    if expansion and (expansion == "Vanilla" and (m.bcc or m.wotlk) or expansion == "BCC" and m.vanilla) then
+    if expansion and (expansion == "Vanilla" or expansion == "BCC") then
       return function()
         return not_available_value
       end

@@ -218,7 +218,7 @@ function M.new( player_info, loot_facade, loot_list, loot_frame, roll_controller
       local item = entry.item
       local is_coin = item.type == "Coin"
       local selected = should_be_selected( item.id, entry.comment )
-      local selected_entry = entry -- Fucking lua50 and its broken closures.
+      local selected_entry = entry
 
       ---@type LootFrameItem
       table.insert( result, {
@@ -240,7 +240,7 @@ function M.new( player_info, loot_facade, loot_list, loot_frame, roll_controller
           end
 
       -- Added a nil-check for item.quality to prevent 3.3.5a crashes
-    if (m.bcc or m.wotlk) and (is_coin or (item.quality and item.quality < 2)) then
+    if is_coin or (item.quality and item.quality < 2) then
       local slot = loot_list.get_slot( item.id )
       if slot then loot_facade.loot_slot( slot ) end
       return

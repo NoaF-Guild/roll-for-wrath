@@ -44,15 +44,13 @@ function M.new( db )
       return nil
     end
 
-    if m.bcc or m.wotlk then
-      -- Try zlib decompression first (softres.it exports are compressed).
-      -- If it fails, fall through and treat data as plain JSON (e.g. custom export tools).
-      local decompressed = LibStub( "LibDeflate" ):DecompressZlib( data )
-      if decompressed then
-        data = decompressed
-      end
-      -- If decompressed is nil, data is left as-is and JSON parsing below will validate it.
+    -- Try zlib decompression first (softres.it exports are compressed).
+    -- If it fails, fall through and treat data as plain JSON (e.g. custom export tools).
+    local decompressed = LibStub( "LibDeflate" ):DecompressZlib( data )
+    if decompressed then
+      data = decompressed
     end
+    -- If decompressed is nil, data is left as-is and JSON parsing below will validate it.
 
     local json = lib_stub( "Json-0.1.2" )
     local success, result = pcall( function() return json.decode( data ) end )

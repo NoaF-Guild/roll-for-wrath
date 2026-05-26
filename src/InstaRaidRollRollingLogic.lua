@@ -35,7 +35,6 @@ function M.new(
 
   local function clear_winners()
     clear_table( m_winners )
-    if m.vanilla then m_winners.n = 0 end
   end
 
   local function start_rolling()
@@ -49,11 +48,9 @@ function M.new(
     local winners = m.map( m_winners,
       ---@param player ItemCandidate|Player
       function( player )
-        if type( player ) == "table" then -- Fucking lua50 and its n.
-          local winner = make_winner( player.name, player.class, item, player.type == "ItemCandidate" or false, roll_type, nil )
-          winner_tracker.track( winner.name, item.link, roll_type, nil, m.Types.RollingStrategy.InstaRaidRoll )
-          return winner
-        end
+        local winner = make_winner( player.name, player.class, item, player.type == "ItemCandidate" or false, roll_type, nil )
+        winner_tracker.track( winner.name, item.link, roll_type, nil, m.Types.RollingStrategy.InstaRaidRoll )
+        return winner
       end )
 
     controller.winners_found( item, item_count, winners, strategy )

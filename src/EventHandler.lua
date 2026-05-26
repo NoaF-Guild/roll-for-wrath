@@ -5,24 +5,15 @@ if m.EventHandler then return end
 
 local M = {}
 
----@diagnostic disable-next-line: undefined-field
-local lua50 = table.setn and true or false
-
 function M.handle_events( main )
   local init = false
   local function event_handler( _, _event, _arg1, _arg2, _arg3, _arg4, _arg5 )
-    ---@diagnostic disable-next-line: undefined-global
-    local event = lua50 and event or _event
-    ---@diagnostic disable-next-line: undefined-global
-    local arg1 = lua50 and arg1 or _arg1
-    ---@diagnostic disable-next-line: undefined-global
-    local arg2 = lua50 and arg2 or _arg2
-    ---@diagnostic disable-next-line: undefined-global
-    local arg3 = lua50 and arg3 or _arg3
-    ---@diagnostic disable-next-line: undefined-global
-    local arg4 = lua50 and arg4 or _arg4
-    ---@diagnostic disable-next-line: undefined-global
-    local arg5 = lua50 and arg5 or _arg5
+    local event = _event
+    local arg1 = _arg1
+    local arg2 = _arg2
+    local arg3 = _arg3
+    local arg4 = _arg4
+    local arg5 = _arg5
 
     if event == "PLAYER_LOGIN" then
       main.on_player_login()
@@ -71,7 +62,7 @@ function M.handle_events( main )
     elseif event == "GET_ITEM_INFO_RECEIVED" then
       main.on_item_info_received( arg1 )
     elseif event == "UI_ERROR_MESSAGE" then
-      local message = m.vanilla and arg1 or arg2  -- vanilla: arg1; BCC/WotLK: arg2
+      local message = arg2
 
       if message == "That player's inventory is full" then
         main.master_loot.on_recipient_inventory_full()
@@ -111,22 +102,14 @@ function M.handle_events( main )
   frame:RegisterEvent( "TRADE_REQUEST_CANCEL" )
   frame:RegisterEvent( "UI_ERROR_MESSAGE" )
   frame:RegisterEvent( "PLAYER_TARGET_CHANGED" )
-  if not m.vanilla then
-    frame:RegisterEvent( "GET_ITEM_INFO_RECEIVED" )
-  end
+  frame:RegisterEvent( "GET_ITEM_INFO_RECEIVED" )
   frame:RegisterEvent( "ZONE_CHANGED" )
   frame:RegisterEvent( "ZONE_CHANGED_NEW_AREA" )
 
-  if m.vanilla then
-    frame:RegisterEvent( "PARTY_MEMBERS_CHANGED" )
-  elseif m.wotlk then
-    -- WotLK 3.3.5a: GROUP_ROSTER_UPDATE does not exist (Cataclysm+).
-    -- Use PARTY_MEMBERS_CHANGED for party and RAID_ROSTER_UPDATE for raid.
-    frame:RegisterEvent( "PARTY_MEMBERS_CHANGED" )
-    frame:RegisterEvent( "RAID_ROSTER_UPDATE" )
-  else
-    frame:RegisterEvent( "GROUP_ROSTER_UPDATE" )
-  end
+  -- WotLK 3.3.5a: GROUP_ROSTER_UPDATE does not exist (Cataclysm+).
+  -- Use PARTY_MEMBERS_CHANGED for party and RAID_ROSTER_UPDATE for raid.
+  frame:RegisterEvent( "PARTY_MEMBERS_CHANGED" )
+  frame:RegisterEvent( "RAID_ROSTER_UPDATE" )
 
   frame:SetScript( "OnEvent", event_handler )
 end

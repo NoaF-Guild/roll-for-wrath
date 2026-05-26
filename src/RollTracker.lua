@@ -73,11 +73,6 @@ function M.new( item_on_roll )
   ---@type Winner[]
   local winners = {}
 
-  local function lua50_clear_table( t )
-    clear_table( t )
-    if m.vanilla then t.n = 0 end
-  end
-
   local function update_roll( rolls, data )
     M.debug.add( "update_roll" )
 
@@ -191,9 +186,9 @@ function M.new( item_on_roll )
   ---@param required_rolling_players RollingPlayer[]?
   local function start( rolling_strategy, count, seconds, message, required_rolling_players )
     M.debug.add( "start" )
-    lua50_clear_table( iterations )
-    lua50_clear_table( winners )
-    lua50_clear_table( master_loot_candidates )
+    clear_table( iterations )
+    clear_table( winners )
+    clear_table( master_loot_candidates )
     current_iteration = 1
     status = { type = S.InProgress, seconds_left = seconds }
 
@@ -223,7 +218,7 @@ function M.new( item_on_roll )
 
   ---@param ml_candidates ItemCandidate[]
   local function update_ml_candidates( ml_candidates )
-    lua50_clear_table( master_loot_candidates )
+    clear_table( master_loot_candidates )
 
     for _, ml_candidate in ipairs( ml_candidates ) do
       table.insert( master_loot_candidates, ml_candidate )
@@ -305,9 +300,9 @@ function M.new( item_on_roll )
   local function clear()
     error( "Nothing should be clearing this.", 2 )
     -- M.debug.add( "clear" )
-    -- lua50_clear_table( iterations )
-    -- lua50_clear_table( winners )
-    -- lua50_clear_table( master_loot_candidates )
+    -- clear_table( iterations )
+    -- clear_table( winners )
+    -- clear_table( master_loot_candidates )
     -- current_iteration = 0
     -- status = nil
     -- item_on_roll = nil
