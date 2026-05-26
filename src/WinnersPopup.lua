@@ -7,7 +7,7 @@ local c = m.colorize_player_by_class
 local r = m.roll_type_color
 local getn = m.getn
 local filter = m.filter
-local _G = getfenv( 0 )
+local _G = _G
 
 ---@class WinnersPopup
 ---@field show fun()

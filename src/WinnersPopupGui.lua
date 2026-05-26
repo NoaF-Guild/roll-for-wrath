@@ -22,7 +22,7 @@ if m.WinnersPopupGui then return end
 ---@field winner fun( parent: Frame): Frame
 ---@field create_scroll_frame fun( parent: Frame, name: string ): ScrollFrame
 local M = {}
-local _G = getfenv( 0 )
+local _G = _G
 
 function M.headers( parent, on_click )
   ---@class HeadersFrame
