@@ -3,6 +3,7 @@ local reqsrc = u.multi_require_src
 local lu, eq = u.luaunit( "assertEquals" ) ---@diagnostic disable-line: unused-local
 local m, T, IU = require( "src/modules" ), require( "src/Types" ), require( "src/ItemUtils" )
 reqsrc( "DebugBuffer", "Module", "Types", "SoftResDataTransformer", "RollingLogicUtils", "RollTracker" )
+reqsrc( "WowApi", "GameApi" )
 reqsrc( "TieRollingLogic", "SoftResRollingLogic", "NonSoftResRollingLogic", "RaidRollRollingLogic", "InstaRaidRollRollingLogic" )
 local SoftResAwardedLootDecorator = require( "src/SoftResAwardedLootDecorator" )
 local SoftResDecorator = require( "src/SoftResPresentPlayersDecorator" )
@@ -47,7 +48,7 @@ end
 function M.mock_config( configuration )
   local config = configuration
 
-  return {
+  local result = {
     auto_loot = function() return config and config.auto_loot end,
     auto_raid_roll = function() return config and config.auto_raid_roll end,
     raid_roll_again = function() return config and config.raid_roll_again end,
@@ -66,8 +67,24 @@ function M.mock_config( configuration )
         str = "/roll"
       }
     end,
-    classic_look = function() return false end
+    classic_look = function() return false end,
+    award_filter = function()
+      return {
+        item_quality = { Uncommon = 1, Rare = 1, Epic = 1, Legendary = 1 },
+        winning_roll = {},
+        roll_type = { MainSpec = 1, OffSpec = 1, Transmog = 1, SoftRes = 1, RR = 1, NA = 1 }
+      }
+    end,
+    keep_award_data = function() return false end,
+    quick_award_ctrl = function() return "Disabled" end,
+    notify_subscribers = function() end,
   }
+
+  setmetatable( result, {
+    __index = function() return function() return false end end
+  } )
+
+  return result
 end
 
 ---@param group_roster GroupRoster
@@ -206,8 +223,12 @@ function M.new_roll_for()
     local loot_list = require( "src/SoftResLootListDecorator" ).new( raw_loot_list, softres )
     deps[ "SoftResLootList" ] = loot_list
 
+    local GameApiMock = require( "mocks/GameApi" )
     local ml_candidates_api = deps[ "MasterLootCandidatesApi" ] or require( "mocks/MasterLootCandidatesApi" ).new( group_roster, raw_loot_list )
-    local ml_candidates = require( "src/MasterLootCandidates" ).new( ml_candidates_api, group_roster, raw_loot_list )
+    local ml_game_api = deps[ "GameApi" ] or GameApiMock.new( {
+      get_master_loot_candidate = ml_candidates_api.GetMasterLootCandidate
+    } )
+    local ml_candidates = require( "src/MasterLootCandidates" ).new( ml_game_api, group_roster, raw_loot_list )
     deps[ "MasterLootCandidates" ] = ml_candidates
 
     local ace_timer = require( "mocks/AceTimer" ).new()
@@ -281,7 +302,7 @@ function M.new_roll_for()
     local rolling_popup_content = require( "src/RollingPopupContentTransformer" ).new( config )
     deps[ "RollingPopupContent" ] = rolling_popup_content
 
-    local auto_loot = require( "mocks/AutoLoot" ).new( loot_list, u.modules().api, db( "auto_loot" ), config, player_info )
+    local auto_loot = require( "mocks/AutoLoot" ).new( loot_list, u.modules().api, db( "auto_loot" ), config, player_info, ml_game_api )
     deps[ "AutoLoot" ] = auto_loot
 
     require( "src/RollResultAnnouncer" ).new( chat, roll_controller, softres, config )

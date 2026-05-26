@@ -603,6 +603,22 @@ function M.roll_type_abbrev( roll_type )
   end
 end
 
+function M.roll_type_abbrev_chat( roll_type )
+  if roll_type == M.Types.RollType.MainSpec then
+    return "MS"
+  elseif roll_type == M.Types.RollType.OffSpec then
+    return "OS"
+  elseif roll_type == M.Types.RollType.Transmog then
+    return "TMOG"
+  elseif roll_type == M.Types.RollType.SoftRes then
+    return "SR"
+  elseif roll_type == M.Types.RollType.RaidRoll then
+    return "RR"
+  else
+    error( string.format( "RollType %s not handled.", roll_type ) )
+  end
+end
+
 function M.possesive_case( player_name )
   local last_letter = string.sub( player_name, -1 )
   return last_letter == "s" and "'" or "'s"

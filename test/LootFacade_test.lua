@@ -9,8 +9,10 @@ local mock = interface.mock
 require( "src/DebugBuffer" )
 require( "src/Module" )
 require( "src/EventFrame" )
+require( "src/WowApi" )
+require( "src/GameApi" )
 require( "src/LootFacade" )
-local WowApi = require( "src/WowApi" )
+local GameApiMock = require( "mocks/GameApi" )
 local LootQuality = utils.LootQuality
 
 LootFacadeSpec = {}
@@ -43,7 +45,7 @@ local function mock_api()
     get_registered_event_names = function() return registered_event_names end
   }
 
-  return frame_api, mock( WowApi.LootInterface )
+  return frame_api, GameApiMock.new()
 end
 
 function LootFacadeSpec.should_register_loot_opened_event_with_event_frame()
@@ -156,7 +158,7 @@ function LootFacadeSpec.should_return_item_count()
   local facade = m.LootFacade.new( event_frame, loot_api )
 
   -- When
-  loot_api.GetNumLootItems = function() return 69 end
+  loot_api.get_num_loot_items = function() return 69 end
 
   -- Then
   eq( facade.get_item_count(), 69 )
@@ -169,7 +171,7 @@ function LootFacadeSpec.should_return_source_guid()
   local facade = m.LootFacade.new( event_frame, loot_api )
 
   -- When
-  loot_api.UnitGUID = target( "PrincessKenny" )
+  loot_api.get_loot_source_guid = function() return "PrincessKenny" end
 
   -- Then
   eq( facade.get_source_guid(), "PrincessKenny" )
@@ -182,7 +184,7 @@ function LootFacadeSpec.should_return_item_link()
   local facade = m.LootFacade.new( event_frame, loot_api )
 
   -- When
-  loot_api.GetLootSlotLink = function( slot ) return slot == 1 and "[Darkflame Helm]" or nil end
+  loot_api.get_loot_slot_link = function( slot ) return slot == 1 and "[Darkflame Helm]" or nil end
 
   -- Then
   eq( facade.get_link( 1 ), "[Darkflame Helm]" )
@@ -195,7 +197,7 @@ function LootFacadeSpec.should_not_return_item_link_for_a_slot_that_doesnt_exist
   local facade = m.LootFacade.new( event_frame, loot_api )
 
   -- When
-  loot_api.GetLootSlotLink = function( slot ) return slot == 1 and "[Darkflame Helm]" or nil end
+  loot_api.get_loot_slot_link = function( slot ) return slot == 1 and "[Darkflame Helm]" or nil end
 
   -- Then
   eq( facade.get_link( 2 ), nil )
@@ -208,9 +210,9 @@ function LootFacadeSpec.should_return_item_info()
   local facade = m.LootFacade.new( event_frame, loot_api )
 
   -- When
-  loot_api.GetLootSlotInfo = function( slot )
+  loot_api.get_loot_slot_info = function( slot )
     if slot ~= 1 then return nil end
-    return "texture", "name", 69, nil, LootQuality.Epic
+    return { texture = "texture", name = "name", quantity = 69, quality = LootQuality.Epic }
   end
   local result = facade.get_info( 1 )
 
@@ -228,9 +230,9 @@ function LootFacadeSpec.should_not_return_item_info_for_a_slot_that_doesnt_exist
   local facade = m.LootFacade.new( event_frame, loot_api )
 
   -- When
-  loot_api.GetLootSlotInfo = function( slot )
+  loot_api.get_loot_slot_info = function( slot )
     if slot ~= 1 then return nil end
-    return "texture", "name", 69, LootQuality.Epic
+    return { texture = "texture", name = "name", quantity = 69, quality = LootQuality.Epic }
   end
 
   -- Then
@@ -242,28 +244,11 @@ function LootFacadeSpec.should_return_whether_a_slot_is_an_item()
   local frame_api, loot_api = mock_api()
   local event_frame = m.EventFrame.new( frame_api )
   local facade = m.LootFacade.new( event_frame, loot_api )
-  loot_api.LOOT_SLOT_ITEM = 1
-  loot_api.LOOT_SLOT_MONEY = 2
-
-  -- When
-  ---@diagnostic disable-next-line: duplicate-set-field
-  loot_api.GetLootSlotType = function() return loot_api.LOOT_SLOT_ITEM end
-
-  -- Then
+  -- When / Then: is_item
+  loot_api.is_loot_slot_item = function() return true end
   eq( facade.is_item(), true )
 
-  -- And When
-  ---@diagnostic disable-next-line: duplicate-set-field
-  loot_api.GetLootSlotType = function() return loot_api.LOOT_SLOT_MONEY end
-
-  -- Then
-  eq( facade.is_item(), false )
-
-  -- And When
-  ---@diagnostic disable-next-line: duplicate-set-field
-  loot_api.GetLootSlotType = function() return nil end
-
-  -- Then
+  loot_api.is_loot_slot_item = function() return false end
   eq( facade.is_item(), false )
 end
 
@@ -272,28 +257,12 @@ function LootFacadeSpec.should_return_whether_a_slot_is_a_coin()
   local frame_api, loot_api = mock_api()
   local event_frame = m.EventFrame.new( frame_api )
   local facade = m.LootFacade.new( event_frame, loot_api )
-  loot_api.LOOT_SLOT_ITEM = 1
-  loot_api.LOOT_SLOT_MONEY = 2
 
-  -- When
-  ---@diagnostic disable-next-line: duplicate-set-field
-  loot_api.GetLootSlotType = function() return loot_api.LOOT_SLOT_MONEY end
-
-  -- Then
+  -- When / Then: is_coin
+  loot_api.is_loot_slot_coin = function() return true end
   eq( facade.is_coin(), true )
 
-  -- And When
-  ---@diagnostic disable-next-line: duplicate-set-field
-  loot_api.GetLootSlotType = function() return loot_api.LOOT_SLOT_ITEM end
-
-  -- Then
-  eq( facade.is_coin(), false )
-
-  -- And When
-  ---@diagnostic disable-next-line: duplicate-set-field
-  loot_api.LootSlotIsCoin = function() return nil end
-
-  -- Then
+  loot_api.is_loot_slot_coin = function() return false end
   eq( facade.is_coin(), false )
 end
 

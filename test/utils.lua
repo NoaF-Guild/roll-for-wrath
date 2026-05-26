@@ -338,6 +338,11 @@ function M.mock_api()
   M.mock_object( "LOOT_SLOT_ITEM", 1 )
   M.mock_object( "LOOT_SLOT_MONEY", 2 )
 
+  -- WotLK globals used directly (not via m.api)
+  _G[ "GetNumRaidMembers" ] = function() return 0 end
+  _G[ "GetNumPartyMembers" ] = function() return 0 end
+  _G[ "UnitIsRaidOfficer" ] = function() return false end
+
   -- Communication
   M.mock( "SendAddonMessage", function() end )
   M.mock( "SendChatMessage", function() end )
