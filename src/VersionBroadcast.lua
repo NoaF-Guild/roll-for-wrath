@@ -55,9 +55,21 @@ function M.new( db, player_info, my_version )
     pp( "https://github.com/obszczymucha/roll-for-vanilla/releases/download/latest/RollFor.zip" )
   end
 
+  local newest_version = nil
+
+  local function new_version_available()
+    return newest_version
+  end
+
   local function on_version( their_version )
-    if m.is_new_version( my_version, their_version ) and not version_recently_reminded() then
-      notify_about_new_version( their_version )
+    if m.is_new_version( my_version, their_version ) then
+      if not newest_version or m.is_new_version( newest_version, their_version ) then
+        newest_version = their_version
+      end
+
+      if not version_recently_reminded() then
+        notify_about_new_version( their_version )
+      end
     end
   end
 
@@ -114,6 +126,7 @@ function M.new( db, player_info, my_version )
     on_version_response = on_version_response,
     group_version_request = group_version_request,
     guild_version_request = guild_version_request,
+    new_version_available = new_version_available,
   }
 end
 
