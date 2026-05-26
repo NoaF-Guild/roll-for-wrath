@@ -1,4 +1,4 @@
-package.path = "./?.lua;" .. "./test/?.lua;" .. package.path .. ";../?.lua;../RollFor/?.lua;../RollFor/libs/?.lua"
+package.path = "./?.lua;" .. "./test/?.lua;" .. package.path .. ";../?.lua"
 
 local u = require( "test/utils" )
 local lu, eq = u.luaunit( "assertEquals" )
