@@ -579,7 +579,7 @@ function M.roll_type_color( roll_type, text )
   elseif roll_type == M.Types.RollType.TieRoll then
     return M.colors.blue( text or "tie" )
   else
-    M.debug.add( string.format( "roll_type_color: unknown roll_type: %s", tostring( roll_type ) ) )
+    if M.debug then M.debug.add( string.format( "roll_type_color: unknown roll_type: %s", tostring( roll_type ) ) ) end
     return M.colors.white( text or string.format( "UNKNOWN (%s)", tostring( roll_type ) ) )
   end
 end
@@ -598,7 +598,7 @@ function M.roll_type_abbrev( roll_type )
   elseif roll_type == M.Types.RollType.TieRoll then
     return "Tie"
   else
-    M.debug.add( string.format( "roll_type_abbrev: unknown roll_type: %s", tostring( roll_type ) ) )
+    if M.debug then M.debug.add( string.format( "roll_type_abbrev: unknown roll_type: %s", tostring( roll_type ) ) ) end
     return string.format( "UNKNOWN (%s)", tostring( roll_type ) )
   end
 end
