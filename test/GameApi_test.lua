@@ -306,18 +306,20 @@ function UnitClassSpec.should_return_non_localized_class_name()
 end
 
 -- ---------------------------------------------------------------------------
--- get_master_loot_candidate (WotLK: passes both slot and index)
+-- get_master_loot_candidate (AzerothCore 3.3.5a: 1-arg form only)
 -- ---------------------------------------------------------------------------
 
 GetMasterLootCandidateSpec = {}
 
-function GetMasterLootCandidateSpec.should_pass_slot_and_index_on_wotlk()
+function GetMasterLootCandidateSpec.should_pass_only_index_to_api()
   -- Given
-  local captured_slot, captured_index
+  -- AzerothCore/ChromieCraft only supports GetMasterLootCandidate(index).
+  -- The 2-arg form (slot, index) is not implemented on most 3.3.5a cores.
+  -- GameApi receives (slot, index) from callers but only passes index to the API.
+  local captured_args = {}
   local api = mock_raw_api( {
-    GetMasterLootCandidate = function( slot, index )
-      captured_slot = slot
-      captured_index = index
+    GetMasterLootCandidate = function( ... )
+      captured_args = { ... }
       return "Obszczymucha"
     end,
   } )
@@ -328,8 +330,8 @@ function GetMasterLootCandidateSpec.should_pass_slot_and_index_on_wotlk()
 
   -- Then
   eq( result, "Obszczymucha" )
-  eq( captured_slot, 1 )
-  eq( captured_index, 3 )
+  eq( #captured_args, 1 )  -- only index passed, not slot
+  eq( captured_args[1], 3 ) -- index = 3
 end
 
 os.exit( lu.LuaUnit.run() )

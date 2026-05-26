@@ -562,6 +562,21 @@ function M.on_player_login()
 
   if M.welcome_popup.should_show() then M.welcome_popup.show() end
   LootFrame:UnregisterAllEvents()
+
+  -- Suppress Blizzard's master looter candidate dropdown (3.3.5a)
+  -- Without this, clicking items as ML shows the default dropdown alongside our custom frame
+  if MasterLooterFrame then
+    MasterLooterFrame:UnregisterAllEvents()
+    MasterLooterFrame:Hide()
+  end
+
+  -- Also suppress the group loot roll frames if present
+  if GroupLootFrame1 then
+    for i = 1, 4 do
+      local frame = _G["GroupLootFrame" .. i]
+      if frame then frame:UnregisterAllEvents() end
+    end
+  end
 end
 
 function M.unaward_item( player_name, item_id, item_link )

@@ -84,7 +84,11 @@ function M.new( api )
   end
 
   local function get_master_loot_candidate( slot, index )
-    return api.GetMasterLootCandidate( slot, index )
+    -- AzerothCore/ChromieCraft only supports the 1-arg form (index only).
+    -- The 2-arg form (slot, index) was added in a later WoW patch and is not
+    -- implemented on most 3.3.5a private server cores — passing slot causes
+    -- it to be misinterpreted as the index, returning wrong candidates.
+    return api.GetMasterLootCandidate( index )
   end
 
   local function get_raid_member( index )
