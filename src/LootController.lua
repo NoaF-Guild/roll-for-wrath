@@ -272,6 +272,12 @@ function M.new( player_info, loot_facade, loot_list, loot_frame, roll_controller
       } )
     end
 
+    -- Hide the frame if there are no items to display
+    if #result == 0 then
+      loot_frame.hide()
+      return
+    end
+
     loot_frame.update( result )
   end
 
