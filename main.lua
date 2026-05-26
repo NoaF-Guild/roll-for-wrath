@@ -382,14 +382,21 @@ local function setup_storage()
 end
 
 local function on_softres_command( args )
+  args = args and args:match( "^%s*(.-)%s*$" ) or ""
+
   if args == "init" then
     clear_data()
     M.softres_gui.toggle()
     return
   end
 
+  if args == "" then
+    M.softres_gui.toggle()
+    return
+  end
+
   -- /sr add PlayerName [ItemLink]
-  local add_player, add_link = string.match( args, "^add (%S+) (|.+|r)$" )
+  local add_player, add_link = string.match( args, "^add%s+(%S+)%s+(|.+|r)$" )
   if add_player and add_link then
     local item_id = M.item_utils.get_item_id( add_link )
     if not item_id then
@@ -415,7 +422,7 @@ local function on_softres_command( args )
   end
 
   -- /sr rm PlayerName [ItemLink]
-  local rm_player, rm_link = string.match( args, "^rm (%S+) (|.+|r)$" )
+  local rm_player, rm_link = string.match( args, "^rm%s+(%S+)%s+(|.+|r)$" )
   if rm_player and rm_link then
     local item_id = M.item_utils.get_item_id( rm_link )
     if not item_id then
@@ -440,8 +447,8 @@ local function on_softres_command( args )
     return
   end
 
-  -- /sr (no args or unrecognized) — toggle GUI
-  M.softres_gui.toggle()
+  -- Unrecognized subcommand — show usage
+  M.chat.info( "Usage: /sr add <player> <item> | /sr rm <player> <item> | /sr init" )
 end
 
 local function on_check_softres_command( args )
