@@ -72,6 +72,8 @@ function M.new( game_api )
         return member.rank > 0
       end
     end
+
+    return false
   end
 
   ---@type PlayerInfo

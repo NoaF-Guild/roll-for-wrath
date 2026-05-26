@@ -24,12 +24,6 @@ M.interface = {
   unit_class = "function",
 }
 
----@class LootSlotInfo
----@field texture string
----@field name string
----@field quantity number
----@field quality number
-
 ---@class LootMethodInfo
 ---@field method string
 ---@field party_index number?
