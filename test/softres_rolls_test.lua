@@ -30,33 +30,7 @@ local targetting_enemy = u.targetting_enemy
 local LootQuality = u.LootQuality
 
 local mock_config = function( config )
-  return {
-    new = function()
-      return {
-        auto_raid_roll = function() return config and config.auto_raid_roll end,
-        minimap_button_hidden = function() return false end,
-        minimap_button_locked = function() return false end,
-        subscribe = function() end,
-        rolling_popup_lock = function() return true end,
-        ms_roll_threshold = function() return 100 end,
-        os_roll_threshold = function() return 99 end,
-        tmog_roll_threshold = function() return 98 end,
-        roll_threshold = function()
-          return {
-            value = 100,
-            str = "/roll"
-          }
-        end,
-        auto_loot = function() return true end,
-        tmog_rolling_enabled = function() return true end,
-        rolling_popup = function() return true end,
-        default_rolling_time_seconds = function() return 8 end,
-        master_loot_frame_rows = function() return 5 end,
-        superwow_auto_loot_coins = function() return true end,
-        classic_look = function() return false end,
-      }
-    end
-  }
+  return u.mock_config( config )
 end
 
 ---@type ModuleRegistry

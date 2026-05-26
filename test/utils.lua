@@ -16,6 +16,11 @@ local m_loot_confirm_callback = nil
 ---@diagnostic disable-next-line: undefined-field
 local lua50 = table.setn and true or false
 
+-- Lua 5.1 compat: table.unpack doesn't exist, only unpack
+if not table.unpack then
+  table.unpack = unpack
+end
+
 if not lua50 then
   function getfenv()
     return _G
@@ -312,7 +317,7 @@ function M.mock_api()
   M.mock( "UnitIsFriend", false )
   M.mock( "InCombatLockdown", false )
   M.mock( "UnitName", "Psikutas" )
-  M.mock( "UnitClass", "Warrior" )
+  M.mock( "UnitClass", function() return "Warrior", "WARRIOR" end )
   M.mock( "GetRealZoneText", "Elwynn Forest" )
   M.mock( "UnitIsGroupLeader", false )
 
@@ -321,6 +326,21 @@ function M.mock_api()
   M.mock( "GetLootSlotInfo" )
   M.mock( "GetLootSlotType" )
   M.mock( "GetNumLootItems" )
+
+  -- GameApi primitives
+  M.mock( "LootSlot", function() end )
+  M.mock( "UnitGUID", function() return nil end )
+  M.mock( "GetLootMethod", function() return "group", nil, nil end )
+  M.mock( "GetMasterLootCandidate", function() return nil end )
+  M.mock( "GetRaidRosterInfo", function() return nil end )
+  M.mock( "UnitIsPartyLeader", false )
+  M.mock( "UnitIsConnected", false )
+  M.mock_object( "LOOT_SLOT_ITEM", 1 )
+  M.mock_object( "LOOT_SLOT_MONEY", 2 )
+
+  -- Communication
+  M.mock( "SendAddonMessage", function() end )
+  M.mock( "SendChatMessage", function() end )
 
   M.zone_name()
   M.loot_threshold( 2 )
@@ -331,6 +351,67 @@ function M.modules()
   require( "src/modules" )
   ---@diagnostic disable-next-line: undefined-global
   return RollFor
+end
+
+--- Creates a mock Config module for integration tests.
+--- Any config fields not explicitly provided will default to noop/false.
+---@param overrides table?  Specific config values to override
+---@return table  A table with .new() that returns the mock config
+function M.mock_config( overrides )
+  overrides = overrides or {}
+
+  return {
+    new = function()
+      local config = {
+        auto_raid_roll = function() return overrides.auto_raid_roll or false end,
+        minimap_button_hidden = function() return false end,
+        minimap_button_locked = function() return false end,
+        subscribe = function() end,
+        rolling_popup_lock = function() return overrides.rolling_popup_lock or true end,
+        ms_roll_threshold = function() return overrides.ms_roll_threshold or 100 end,
+        os_roll_threshold = function() return overrides.os_roll_threshold or 99 end,
+        tmog_roll_threshold = function() return overrides.tmog_roll_threshold or 98 end,
+        roll_threshold = function()
+          return {
+            value = overrides.ms_roll_threshold or 100,
+            str = "/roll"
+          }
+        end,
+        auto_loot = function() return overrides.auto_loot ~= false end,
+        tmog_rolling_enabled = function() return overrides.tmog_rolling_enabled ~= false end,
+        rolling_popup = function() return true end,
+        raid_roll_again = function() return overrides.raid_roll_again or false end,
+        default_rolling_time_seconds = function() return overrides.default_rolling_time_seconds or 8 end,
+        master_loot_frame_rows = function() return overrides.master_loot_frame_rows or 5 end,
+        classic_look = function() return overrides.classic_look ~= nil and overrides.classic_look or false end,
+        award_filter = function()
+          return overrides.award_filter or {
+            item_quality = { Uncommon = 1, Rare = 1, Epic = 1, Legendary = 1 },
+            winning_roll = {},
+            roll_type = { MainSpec = 1, OffSpec = 1, Transmog = 1, SoftRes = 1, RR = 1, NA = 1 }
+          }
+        end,
+        keep_award_data = function() return overrides.keep_award_data or false end,
+        quick_award_ctrl = function() return overrides.quick_award_ctrl or "Disabled" end,
+        show_open_roll_button = function() return overrides.show_open_roll_button or false end,
+        client_show_roll_popup = function() return overrides.client_show_roll_popup or "Off" end,
+        client_auto_hide_popup = function() return overrides.client_auto_hide_popup or false end,
+        superwow_auto_loot_coins = function() return overrides.superwow_auto_loot_coins or false end,
+        notify_subscribers = function() end,
+        on_command = function() end,
+        print_raid_roll_settings = function() end,
+      }
+
+      -- Metatable: any unknown config field returns a noop function returning false
+      setmetatable( config, {
+        __index = function( _, key )
+          return function() return false end
+        end
+      } )
+
+      return config
+    end
+  }
 end
 
 function M.mock_slashcmdlist()
@@ -376,6 +457,7 @@ function M.run_command( command, args )
 end
 
 function M.roll_for( item_name, count, item_id )
+  item_name = item_name or "Hearthstone"
   M.run_command( "RF", string.format( "%s%s", count and string.format( "%sx", count ) or "", M.item_link( item_name, item_id ) ) )
   m_rolling_item_name = item_name
 end
@@ -837,6 +919,7 @@ function M.load_real_stuff( req )
   r( "src/LootFacade" )
   r( "src/EventFrame" )
   r( "src/WowApi" )
+  r( "src/GameApi" )
   r( "src/PlayerInfo" )
   r( "src/EventBus" )
   r( "src/ChatApi" )
@@ -906,11 +989,20 @@ function M.load_real_stuff( req )
   r( "src/GuiElements" )
   r( "src/ModernLootFrameSkin" )
   r( "src/OgLootFrameSkin" )
-  r( "src/RollForBroadcast" )
-  r( "src/RollForReceiver" )
-  r( "src/GargulBridge" )
+  pcall( r, "src/RollForBroadcast" )
+  pcall( r, "src/RollForReceiver" )
+  pcall( r, "src/GargulBridge" )
   -- r( "Libs/LibDeflate/LibDeflate" )
   r( "src/bcc/Json" )
+  r( "src/ConfirmPopup" )
+  r( "src/OptionsGuiElements" )
+  r( "src/OptionsPopup" )
+  r( "src/WinnersPopup" )
+  r( "src/WinnersPopupGui" )
+  r( "src/SrListener" )
+  r( "src/Client" )
+  r( "src/ClientBroadcast" )
+  r( "src/BindingsHandler" )
   r( "main" )
 end
 

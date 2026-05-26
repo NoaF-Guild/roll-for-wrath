@@ -12,32 +12,7 @@ local tick, roll = u.tick, u.roll
 local mock_math_random, mock_multiple_math_random = u.mock_math_random, u.mock_multiple_math_random
 
 local function mock_config()
-  return {
-    new = function()
-      return {
-        auto_raid_roll = function() return false end,
-        minimap_button_hidden = function() return false end,
-        minimap_button_locked = function() return false end,
-        subscribe = function() end,
-        rolling_popup_lock = function() return true end,
-        ms_roll_threshold = function() return 100 end,
-        os_roll_threshold = function() return 99 end,
-        tmog_roll_threshold = function() return 98 end,
-        roll_threshold = function()
-          return {
-            value = 100,
-            str = "/roll"
-          }
-        end,
-        auto_loot = function() return true end,
-        tmog_rolling_enabled = function() return true end,
-        rolling_popup = function() return true end,
-        raid_roll_again = function() return false end,
-        default_rolling_time_seconds = function() return 8 end,
-        classic_look = function() return false end
-      }
-    end
-  }
+  return u.mock_config()
 end
 
 ---@type ModuleRegistry

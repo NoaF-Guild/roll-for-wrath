@@ -16,33 +16,7 @@ local make_item_candidate, make_dropped_item = t.make_item_candidate, i.make_dro
 local C = t.PlayerClass
 
 local function mock_config()
-  return {
-    new = function()
-      return {
-        auto_raid_roll = function() return false end,
-        minimap_button_hidden = function() return false end,
-        minimap_button_locked = function() return false end,
-        subscribe = function() end,
-        rolling_popup_lock = function() return true end,
-        ms_roll_threshold = function() return 100 end,
-        os_roll_threshold = function() return 99 end,
-        tmog_roll_threshold = function() return 98 end,
-        roll_threshold = function()
-          return {
-            value = 100,
-            str = "/roll"
-          }
-        end,
-        auto_loot = function() return true end,
-        superwow_auto_loot_coins = function() return false end,
-        tmog_rolling_enabled = function() return true end,
-        rolling_popup = function() return true end,
-        raid_roll_again = function() return false end,
-        default_rolling_time_seconds = function() return 8 end,
-        classic_look = function() return true end
-      }
-    end
-  }
+  return u.mock_config( { classic_look = true } )
 end
 
 ---@type ModuleRegistry

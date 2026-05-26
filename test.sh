@@ -28,7 +28,7 @@ run_test() {
     params=("${@:2}")
   fi
 
-  lua "$file" "${params[@]}" | awk '{ gsub("^OK$", "\033[1;32m&\033[0m");
+  lua5.1 "$file" "${params[@]}" | awk '{ gsub("^OK$", "\033[1;32m&\033[0m");
                           gsub("Ok$", "\033[1;32m&\033[0m");
                           gsub("^Failed tests:$", "\033[1;31m&\033[0m");
                           gsub("FAIL$", "\033[1;31m&\033[0m");
