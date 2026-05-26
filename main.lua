@@ -384,7 +384,63 @@ end
 local function on_softres_command( args )
   if args == "init" then
     clear_data()
+    M.softres_gui.toggle()
+    return
   end
+
+  -- /sr add PlayerName [ItemLink]
+  local add_player, add_link = string.match( args, "^add (%S+) (|.+|r)$" )
+  if add_player and add_link then
+    local item_id = M.item_utils.get_item_id( add_link )
+    if not item_id then
+      M.chat.info( "Invalid item link." )
+      return
+    end
+
+    local group_player = M.group_roster.find_player( add_player )
+    if group_player then
+      add_player = group_player.name
+    end
+
+    local quality = select( 3, m.api.GetItemInfo( add_link ) ) or 0
+    if M.unfiltered_softres.add_player_item( add_player, item_id, quality ) then
+      M.name_matcher.auto_match()
+      update_minimap_icon()
+      local display = group_player and m.colorize_player_by_class( group_player.name, group_player.class ) or add_player
+      M.chat.info( string.format( "Added SR: %s \226\134\146 %s", display, add_link ) )
+    else
+      M.chat.info( "Failed to add SR." )
+    end
+    return
+  end
+
+  -- /sr rm PlayerName [ItemLink]
+  local rm_player, rm_link = string.match( args, "^rm (%S+) (|.+|r)$" )
+  if rm_player and rm_link then
+    local item_id = M.item_utils.get_item_id( rm_link )
+    if not item_id then
+      M.chat.info( "Invalid item link." )
+      return
+    end
+
+    local group_player = M.group_roster.find_player( rm_player )
+    if group_player then
+      rm_player = group_player.name
+    end
+
+    if M.unfiltered_softres.remove_player_item( rm_player, item_id ) then
+      M.name_matcher.auto_match()
+      update_minimap_icon()
+      local display = group_player and m.colorize_player_by_class( group_player.name, group_player.class ) or rm_player
+      M.chat.info( string.format( "Removed SR: %s \226\134\146 %s", display, rm_link ) )
+    else
+      local display = group_player and m.colorize_player_by_class( group_player.name, group_player.class ) or rm_player
+      M.chat.info( string.format( "%s does not have that item soft-ressed.", display ) )
+    end
+    return
+  end
+
+  -- /sr (no args or unrecognized) — toggle GUI
   M.softres_gui.toggle()
 end
 
