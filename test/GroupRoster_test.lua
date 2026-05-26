@@ -13,12 +13,22 @@ require( "src/Types" )
 local mock_player_info = require( "mocks/PlayerInfo" ).new
 local gr = require( "src/GroupRoster" )
 
+local function class_mock()
+  return smart_table( {
+    [ "player" ] = packed_value( { "Warrior", "Warrior" } ),
+    [ "party1" ] = packed_value( { "Warrior", "Warrior" } ),
+    [ "party2" ] = packed_value( { "Warrior", "Warrior" } ),
+    [ "party3" ] = packed_value( { "Warrior", "Warrior" } ),
+    [ "party4" ] = packed_value( { "Warrior", "Warrior" } )
+  } )
+end
+
 local function player( name )
   return function()
     return {
       mock( "UnitName", smart_table( { [ "player" ] = name } ) ),
       mock( "IsInGroup", false ),
-      mock( "UnitClass", "Warrior" )
+      mock( "UnitClass", class_mock() )
     }
   end
 end
@@ -48,7 +58,7 @@ local function group( _player, is_in_raid, ... )
       } ) ),
       mock( "IsInGroup", true ),
       mock( "IsInRaid", is_in_raid ),
-      mock( "UnitClass", "Warrior" ), -- For simplicity everyone is a warrior.
+      mock( "UnitClass", class_mock() ), -- For simplicity everyone is a warrior.
       mock( "GetRaidRosterInfo", smart_table( make_warriors( all_players ) ) ),
       mock( "UnitIsConnected", true )
     }

@@ -93,6 +93,15 @@ function M.mock_wow_api()
   M.modules().lua.time = os.time
   M.modules().lua.random = math.random
   M.modules().api.UISpecialFrames = {}
+
+  -- WotLK globals used directly by source (not via m.api)
+  _G[ "GetNumRaidMembers" ] = function() return 0 end
+  _G[ "GetNumPartyMembers" ] = function() return 0 end
+  _G[ "UnitIsRaidOfficer" ] = function() return false end
+  _G[ "UnitIsPartyLeader" ] = function() return false end
+  _G[ "GetLootMethod" ] = function() return "group", nil, nil end
+  _G[ "GetMasterLootCandidate" ] = function() return nil end
+  _G[ "GetRaidRosterInfo" ] = function() return nil end
   M.modules().api.InCombatLockdown = function() return false end
   M.modules().api.IsAltKeyDown = function() return false end
   M.modules().api.GetAddOnMetadata = function() return "2.6" end -- version
@@ -472,6 +481,7 @@ function M.roll_for_raw( raw_text )
 end
 
 function M.raid_roll( item_name, item_id, count )
+  item_name = item_name or "Hearthstone"
   local link = M.item_link( item_name, item_id )
   M.run_command( "RR", count and count > 1 and string.format( "%sx%s", count, link ) or link )
 end
@@ -481,6 +491,7 @@ function M.raid_roll_raw( raw_text )
 end
 
 function M.insta_raid_roll( item_name, item_id, count )
+  item_name = item_name or "Hearthstone"
   local link = M.item_link( item_name, item_id )
   M.run_command( "IRR", count and count > 1 and string.format( "%sx%s", count, link ) or link )
 end
@@ -640,6 +651,7 @@ function M.is_in_party( ... )
   local players = { ... }
   M.mock( "IsInGroup", true )
   M.mock( "IsInRaid", false )
+  M.mock( "UnitIsConnected", true )
 
   if #players > 1 then
     local party = {

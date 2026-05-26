@@ -249,6 +249,9 @@ function M.new_roll_for()
     local player_selection_frame = require( "mocks/MasterLootCandidateSelectionFrame" ).new( frame_builder, config )
     deps[ "PlayerSelectionFrame" ] = player_selection_frame
 
+    -- Circular dependency: LootAwardCallback needs roll_controller, roll_controller needs loot_award_callback
+    local loot_award_callback = require( "src/LootAwardCallback" ).new( awarded_loot, nil, winner_tracker, group_roster, softres, confirmation_popup, config )
+
     local roll_controller = require( "src/RollController" ).new(
       ml_candidates,
       softres,
@@ -256,10 +259,12 @@ function M.new_roll_for()
       config,
       rolling_popup,
       confirmation_popup, ---@diagnostic disable-line: param-type-mismatch
-      player_selection_frame
+      player_selection_frame,
+      player_info,
+      loot_award_callback
     )
 
-    local loot_award_callback = require( "src/LootAwardCallback" ).new( awarded_loot, roll_controller, winner_tracker, group_roster )
+    loot_award_callback.set_roll_controller( roll_controller )
     local master_loot = require( "src/MasterLoot" ).new( ml_candidates, loot_award_callback, loot_list, roll_controller )
     deps[ "MasterLoot" ] = master_loot
 
