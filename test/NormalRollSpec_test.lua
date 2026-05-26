@@ -1617,7 +1617,7 @@ function NoOneRollsSpec:should_show_award_button_when_looting_the_corpse_again_i
     item_link( item, 1 ),
     mainspec_roll( p1, 24, 11 ),
     text( "Cosmicshadow wins the main-spec roll with 24.", 11 ),
-    buttons( "RaidRoll", "Close" )
+    buttons( "AwardWinner", "RaidRoll", "Close" )
   )
 
   -- When
