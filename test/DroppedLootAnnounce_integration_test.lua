@@ -21,11 +21,16 @@ local hr = utils.hard_res_item
 local sr = utils.soft_res_item
 local mock = utils.mock
 
+local function mock_config()
+  return utils.mock_config( { announce_sr_on_loot = false } )
+end
+
 ---@type ModuleRegistry
 local module_registry = {
   { module_name = "LootFacade", mock = "mocks/LootFacade", variable_name = "loot_facade" },
   { module_name = "ChatApi",    mock = "mocks/ChatApi",    variable_name = "chat" },
-  { module_name = "LootList",   mock = "mocks/LootList" }
+  { module_name = "LootList",   mock = "mocks/LootList" },
+  { module_name = "Config",     mock = mock_config }
 }
 
 -- The modules will be injected here using the above module_registry.

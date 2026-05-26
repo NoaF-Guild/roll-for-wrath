@@ -156,8 +156,7 @@ end
 
 function MainspecRollsSpec:should_only_record_loot_that_we_are_awarding()
   -- Given
-  u.mock( "GetLootMethod", "master" )
-  player( "Psikutas" )
+  u.master_looter( "Psikutas" )
   is_in_raid( leader( "Psikutas" ), "Obszczymucha" )
   local controller = m.roll_controller ---@type RollController
   local awarded_loot = m.awarded_loot ---@type AwardedLoot
