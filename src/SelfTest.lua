@@ -33,7 +33,11 @@ function M.new( game_api, player_info )
     print( "|cff80b8ff--- RollFor API Self-Test ---|r" )
 
     -- Lua build assumptions
-    check( "table.setn is nil (lua50=false)", table.setn == nil )
+    -- WoW 3.3.5a retains table.setn as a stub even though it uses Lua 5.1.
+    -- Event handlers use function params (5.1 behavior) regardless of table.setn presence.
+    if table.setn then
+      print( "   INFO: table.setn present (WoW Lua 5.1 with 5.0 stubs — expected on 3.3.5a)" )
+    end
     check( "table.getn exists", table.getn ~= nil )
 
     -- Library presence
@@ -50,7 +54,8 @@ function M.new( game_api, player_info )
     check( "unit_class(player) is string", type( game_api.unit_class( "player" ) ) == "string" )
     check( "is_in_group() is boolean", type( game_api.is_in_group() ) == "boolean" )
     check( "is_in_raid() is boolean", type( game_api.is_in_raid() ) == "boolean" )
-    check( "is_party_leader() is boolean", type( game_api.is_party_leader() ) == "boolean" )
+    local pl = game_api.is_party_leader()
+    check( "is_party_leader() is boolean", type( pl ) == "boolean" )
 
     -- get_loot_method record shape
     local loot = game_api.get_loot_method()

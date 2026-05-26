@@ -93,12 +93,15 @@ function M.new( api )
   end
 
   local function is_party_leader()
+    local result
     -- UnitIsGroupLeader was added in Cataclysm. If present (modern client), prefer it.
     if api.UnitIsGroupLeader then
-      return api.UnitIsGroupLeader( "player" )
+      result = api.UnitIsGroupLeader( "player" )
+    elseif api.UnitIsPartyLeader then
+      -- WotLK 3.3.5a: UnitIsPartyLeader returns 1/nil, not true/false.
+      result = api.UnitIsPartyLeader( "player" )
     end
-    -- WotLK 3.3.5a fallback: UnitIsPartyLeader only works in party context.
-    return api.UnitIsPartyLeader and api.UnitIsPartyLeader( "player" ) or false
+    return result == 1 or result == true
   end
 
   local function is_in_group()
