@@ -2,10 +2,10 @@ name: RollFor Tests
 
 on:
   push:
-    branches: [ "master", "v3" ]
+    branches: ["master", "v3"]
   pull_request_target:
     types: [opened, reopened, edited, synchronize]
-    branches: [ "master" ]
+    branches: ["master"]
 
 jobs:
   test:
@@ -13,21 +13,20 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v3
-      with:
-        ref: ${{ github.event.pull_request.head.sha }}
-        fetch-depth: 0
+      - uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
 
-    - name: Install Lua
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y lua5.1 liblua5.1-dev
+      - name: Install Lua
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y lua5.1 liblua5.1-dev
 
-    # - name: Install LuaRocks
-    #   run: |
-    #     sudo apt-get install -y luarocks
+      # - name: Install LuaRocks
+      #   run: |
+      #     sudo apt-get install -y luarocks
 
-    - name: Run tests
-      run: |
-        ./test.sh
-
+      - name: Run tests
+        run: |
+          ./test.sh
