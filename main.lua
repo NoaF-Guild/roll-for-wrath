@@ -563,11 +563,14 @@ function M.on_player_login()
   if M.welcome_popup.should_show() then M.welcome_popup.show() end
   LootFrame:UnregisterAllEvents()
 
-  -- Suppress Blizzard's master looter candidate dropdown (3.3.5a)
-  -- Without this, clicking items as ML shows the default dropdown alongside our custom frame
-  if MasterLooterFrame then
-    MasterLooterFrame:UnregisterAllEvents()
-    MasterLooterFrame:Hide()
+  -- Suppress Blizzard's master looter candidate dropdown (3.3.5a).
+  -- On 3.3.5a, clicking a loot slot as ML fires OPEN_MASTER_LOOT_LIST which
+  -- triggers the default GroupLootDropDown. We hook the function that shows it.
+  -- This also prevents ElvUI's loot module from showing its version.
+  if GroupLootDropDown then
+    local old_init = GroupLootDropDown.initialize
+    GroupLootDropDown.initialize = function() end
+    GroupLootDropDown:Hide()
   end
 
   -- Also suppress the group loot roll frames if present

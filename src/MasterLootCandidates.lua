@@ -51,10 +51,21 @@ function M.new( game_api, group_roster, loot_list )
     for i = 1, 40 do
       local name = game_api.get_master_loot_candidate( slot, i )
 
-      for _, p in ipairs( players ) do
-        if name == p.name then
-          table.insert( result, make_item_candidate( name, p.class, p.online ) )
+      if name then
+        for _, p in ipairs( players ) do
+          if name == p.name then
+            table.insert( result, make_item_candidate( name, p.class, p.online ) )
+          end
         end
+      end
+    end
+
+    -- Fallback: on AzerothCore/ChromieCraft, GetMasterLootCandidate may return nil
+    -- if the system candidate list hasn't been built yet (requires LootSlot() call).
+    -- In that case, use the full group roster as candidates.
+    if #result == 0 then
+      for _, p in ipairs( players ) do
+        table.insert( result, make_item_candidate( p.name, p.class, p.online ) )
       end
     end
 
@@ -82,9 +93,17 @@ function M.new( game_api, group_roster, loot_list )
   end
 
     local function get_index( slot, player_name )
+    -- Try the API first (works if candidate list has been built)
     for i = 1, 40 do
       local name = game_api.get_master_loot_candidate( slot, i )
       if name == player_name then return i end
+    end
+
+    -- Fallback: on AzerothCore, the candidate index matches the raid roster index.
+    -- Iterate the roster to find the player's position.
+    for i = 1, 40 do
+      local member = game_api.get_raid_member( i )
+      if member and member.name == player_name then return i end
     end
   end
 
