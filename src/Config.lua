@@ -26,7 +26,7 @@ function M.new( db, event_bus )
     [ "auto_loot" ] = { cmd = "auto-loot", display = "Auto-loot", help = "toggle auto-loot" },
     [ "handle_plus_ones"] = { cmd = "Handle-plus-ones", display = "handle-plus-ones", help = "Toggle +1 handling for main-spec rolls." },
     [ "plus_one_prompt"] = { cmd = "plus-one-prompt", display = "Plus-one-prompt", help = "Prompt the user for whether the award should give a +1" },
-    [ "superwow_auto_loot_coins" ] = { cmd = "superwow-auto-loot-coins", display = "Auto-loot coins with SuperWoW", help = "toggle auto-loot coins with SuperWoW" },
+    [ "auto_loot_coins" ] = { cmd = "auto-loot-coins", display = "Auto-loot coins", help = "toggle auto-loot coins" },
     [ "auto_loot_messages" ] = { cmd = "auto-loot-messages", display = "Auto-loot messages", help = "toggle auto-loot messages" },
     [ "auto_loot_announce" ] = { cmd = "auto-loot-announce", display = "Announce auto-looted items", help = "toggle announcements of auto-loot items" },
     [ "auto_class_announce" ] = { cmd = "auto-class-announce", display = "Announce class restriction on items", help = "toggle announcing of class restriction on items" },
@@ -62,7 +62,7 @@ function M.new( db, event_bus )
     if not db.ms_roll_threshold then db.ms_roll_threshold = 100 end
     if not db.os_roll_threshold then db.os_roll_threshold = 99 end
     if not db.tmog_roll_threshold then db.tmog_roll_threshold = 98 end
-    if not db.superwow_auto_loot_coins then db.superwow_auto_loot_coins = true end
+    if not db.auto_loot_coins then db.auto_loot_coins = true end
     if db.tmog_rolling_enabled == nil then db.tmog_rolling_enabled = true end
     if db.auto_tmog == nil then db.auto_tmog = false end
     if db.show_ml_warning == nil then db.show_ml_warning = false end

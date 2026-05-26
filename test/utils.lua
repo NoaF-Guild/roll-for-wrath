@@ -410,7 +410,7 @@ function M.mock_config( overrides )
         show_open_roll_button = function() return overrides.show_open_roll_button or false end,
         client_show_roll_popup = function() return overrides.client_show_roll_popup or "Off" end,
         client_auto_hide_popup = function() return overrides.client_auto_hide_popup or false end,
-        superwow_auto_loot_coins = function() return overrides.superwow_auto_loot_coins or false end,
+        auto_loot_coins = function() return overrides.auto_loot_coins or false end,
         notify_subscribers = function() end,
         on_command = function() end,
         print_raid_roll_settings = function() end,

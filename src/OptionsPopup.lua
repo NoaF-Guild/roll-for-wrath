@@ -227,7 +227,7 @@ function M.new( popup_builder, awarded_loot, version_broadcast, event_bus, confi
       e.create_config( parent, "Loot settings", nil, "header" )
       e.create_config( parent, "Master loot frame rows", "master_loot_frame_rows", "number|min=5|max=20", "Value must be between 5 and 20 rows.", notify )
       e.create_config( parent, "Auto-loot", "auto_loot", "checkbox", "Auto-loot items below loot thresold. BoP items will not be auto looted." )
-      e.create_config( parent, "Auto-loot coins with SuperWow", "superwow_auto_loot_coins", "checkbox", "Automatically loot coins (requires SuperWow mod)." )
+      e.create_config( parent, "Auto-loot coins", "auto_loot_coins", "checkbox", "Automatically loot coins when master looting." )
       e.create_config( parent, "Auto-loot messages", "auto_loot_messages", "checkbox", "Display auto-looted items in your private chat." )
       e.create_config( parent, "Announce auto-looted items", "auto_loot_announce", "checkbox", "Announce auto-looted items above loot quality threshold to party/raid." )
       e.create_config( parent, "Announce SR status when item drops", "announce_sr_on_loot", "checkbox", "Announce whether each dropped item is Soft-Ressed (or not) when the loot window opens." )
