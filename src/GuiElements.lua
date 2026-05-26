@@ -127,7 +127,6 @@ function M.item_link_with_icon( parent, text )
 
   local function on_enter( self )
     if not tooltip_link then return end
-    if m.vanilla then self = this end
 
     m.api.GameTooltip:SetOwner( self, "ANCHOR_CURSOR" )
     m.api.GameTooltip:SetHyperlink( tooltip_link )
@@ -272,8 +271,8 @@ function M.roll( parent )
 end
 
 function M.button( parent )
-  local template = m.vanilla and "StaticPopupButtonTemplate" or "UIPanelButtonTemplate"
-  local height = m.vanilla and 20 or 21
+  local template = "UIPanelButtonTemplate"
+  local height = 21
 
   local button = m.api.CreateFrame( "Button", nil, parent, template )
   button:SetWidth( 100 )
@@ -285,8 +284,8 @@ function M.button( parent )
 end
 
 function M.award_button( parent )
-  local template = m.vanilla and "StaticPopupButtonTemplate" or "UIPanelButtonTemplate"
-  local height = m.vanilla and 20 or 21
+  local template = "UIPanelButtonTemplate"
+  local height = 21
 
   local button = m.api.CreateFrame( "Button", nil, parent, template )
   button:SetWidth( 100 )
@@ -646,8 +645,6 @@ function M.info( parent )
   icon:SetPoint( "CENTER", 0, 0 )
 
   frame:SetScript( "OnEnter", function( self )
-    if m.vanilla then self = this end
-
     self.tooltip_scale = m.api.GameTooltip:GetScale()
     m.api.GameTooltip:SetOwner( self, "ANCHOR_CURSOR" )
     m.api.GameTooltip:AddLine( frame.tooltip_info, 1, 1, 1 )
@@ -656,8 +653,6 @@ function M.info( parent )
   end )
 
   frame:SetScript( "OnLeave", function( self )
-    if m.vanilla then self = this end
-
     m.api.GameTooltip:Hide()
     m.api.GameTooltip:SetScale( self.tooltip_scale or 1 )
   end )

@@ -56,8 +56,6 @@ function M.new( api, db, manage_softres_fn, winners_popup_fn, options_popup_fn, 
     local was_dragging = false
 
     function frame.OnClick( self, button )
-      if m.vanilla then self = this end
-
       if button == "RightButton" then
         options_popup_fn()
       elseif m.is_shift_key_down() then
@@ -72,22 +70,15 @@ function M.new( api, db, manage_softres_fn, winners_popup_fn, options_popup_fn, 
     end
 
     function frame.OnMouseDown( self )
-      if m.vanilla then self = this end
-
       self.icon:SetTexCoord( 0, 1, 0, 1 )
       was_dragging = false
     end
 
     function frame.OnMouseUp( self )
-      if m.vanilla then self = this end
-
       self.icon:SetTexCoord( 0.05, 0.95, 0.05, 0.95 )
-      if m.vanilla and not was_dragging then self:OnClick() end
     end
 
     function frame.OnEnter( self )
-      if m.vanilla then self = this end
-
       if not self.dragging then
         api().GameTooltip:SetOwner( self, "ANCHOR_LEFT" )
         api().GameTooltip:SetText( blue( "RollFor" ) )
@@ -138,8 +129,6 @@ function M.new( api, db, manage_softres_fn, winners_popup_fn, options_popup_fn, 
     end
 
     function frame.OnDragStart( self )
-      if m.vanilla then self = this end
-
       self.dragging = true
       self:LockHighlight()
       self.icon:SetTexCoord( 0, 1, 0, 1 )
@@ -149,8 +138,6 @@ function M.new( api, db, manage_softres_fn, winners_popup_fn, options_popup_fn, 
     end
 
     function frame.OnDragStop( self )
-      if m.vanilla then self = this end
-
       self.dragging = nil
       self:SetScript( "OnUpdate", nil )
       self.icon:SetTexCoord( 0.05, 0.95, 0.05, 0.95 )
@@ -158,8 +145,6 @@ function M.new( api, db, manage_softres_fn, winners_popup_fn, options_popup_fn, 
     end
 
     function frame.OnUpdate( self )
-      if m.vanilla then self = this end
-
       local mx, my = api().Minimap:GetCenter()
       local px, py = api().GetCursorPosition()
       local scale = api().Minimap:GetEffectiveScale()
@@ -175,7 +160,6 @@ function M.new( api, db, manage_softres_fn, winners_popup_fn, options_popup_fn, 
     --I suck at trig, so I"m not going to bother figuring it out
     ---@diagnostic disable-next-line: redefined-local
     function frame.UpdatePosition( self )
-      if m.vanilla then self = this end
 
       local angle = math.rad( get_angle() or m.lua.random( 0, 360 ) )
       local cos = math.cos( angle )

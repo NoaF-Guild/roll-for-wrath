@@ -54,7 +54,6 @@ function M.create_gui_entry( title, frames, populate )
 end
 
 function M.entry_update( self )
-  if m.vanilla then self = this end
   local focus = m.api.GetMouseFocus()
   if (focus and focus.value) then
     return
