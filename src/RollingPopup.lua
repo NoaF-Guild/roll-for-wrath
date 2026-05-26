@@ -6,6 +6,7 @@ if m.RollingPopup then return end
 local getn = m.getn
 local c = m.colorize_player_by_class
 local blue = m.colors.blue
+local RollType = m.Types.RollType
 
 local button_defaults = {
   width = 80,
@@ -13,7 +14,7 @@ local button_defaults = {
   scale = 0.76
 }
 
----@alias RollingPopupData RollingPopupPreviewData|RollingPopupRaidRollData|RollingPopupRollData|RollingPopupRollingCanceledData|RollingPopupRaidRollingData|RollingPopupTieData
+---@alias RollingPopupData RollingPopupPreviewData|RollingPopupRaidRollData|RollingPopupRollData|RollingPopupRollingCanceledData|RollingPopupRaidRollingData|RollingPopupTieData|RollingPopupAwardedData
 
 ---@class RollingPopup
 ---@field show fun()
@@ -24,6 +25,7 @@ local button_defaults = {
 ---@field get_frame fun(): table
 ---@field ping fun()
 ---@field get_anchor_point fun(): Point?
+---@field align_bottom fun()
 
 local M = m.Module.new( "RollingPopup" )
 
@@ -36,6 +38,7 @@ M.center_point = { point = "CENTER", relative_point = "CENTER", x = 0, y = 150 }
 function M.new( popup_builder, content_transformer, db, config )
   ---@type Popup?
   local popup
+  local options = {}
   db.point = db.point or M.center_point
 
   local top_padding = config.classic_look() and 14 or 8
@@ -75,9 +78,19 @@ function M.new( popup_builder, content_transformer, db, config )
       if not popup then return end
 
       if m.is_frame_out_of_bounds( popup ) then
-        db.point = M.center_point
-        popup:position( M.center_point )
+        db.point = options.point or M.center_point
+        popup:position( db.point )
+        return
+      end
 
+      if options.point then
+        local scale = m.api.UIParent:GetEffectiveScale()
+        local center_x, center_y = m.api.UIParent:GetCenter()
+        local offset_x = (popup:GetLeft() + (popup:GetWidth() / 2)) - (center_x * scale)
+        local offset_y = popup:GetBottom() - (center_y * scale)
+
+        db.point = { point = options.point.point, relative_point = options.point.relative_point, x = offset_x, y = offset_y }
+        popup:position( db.point )
         return
       end
 
@@ -87,11 +100,11 @@ function M.new( popup_builder, content_transformer, db, config )
 
     local function get_point()
       if popup and m.is_frame_out_of_bounds( popup ) then
-        return M.center_point
+        return options.point or M.center_point
       elseif db.point then
         return db.point
       else
-        return M.center_point
+        return options.point or M.center_point
       end
     end
 
@@ -109,7 +122,10 @@ function M.new( popup_builder, content_transformer, db, config )
             on_hide()
           end
         end )
-        :self_centered_anchor()
+
+    if not options.point then
+      builder:self_centered_anchor()
+    end
 
     local result = builder:build()
 
@@ -165,8 +181,17 @@ function M.new( popup_builder, content_transformer, db, config )
         elseif type == "icon_text" then
           frame:SetText( v.value )
         elseif type == "roll" then
-          frame.roll_type:SetText( m.roll_type_color( v.roll_type, m.roll_type_abbrev( v.roll_type ) ) )
-          frame.player_name:SetText( c( v.player_name, v.player_class ) )
+          local roll_type_text = m.roll_type_abbrev( v.roll_type )
+          if v.roll_type == RollType.MainSpec and v.plus_ones > 0 then
+            roll_type_text = roll_type_text .. " +" .. v.plus_ones
+          end
+          frame.roll_type:SetText( m.roll_type_color( v.roll_type, roll_type_text ) )
+
+          local show_player_roles = config.show_player_roles()
+          frame:SetWidth( config.show_player_roles() and 200 or 170 )
+
+          local player_role = show_player_roles and v.player_role and string.format( " (%s)", string.gsub( v.player_role, v.player_class, "" ) ) or ""
+          frame.player_name:SetText( string.format( "%s%s", c( v.player_name, v.player_class ), player_role ) )
 
           if v.roll then
             frame.roll:SetText( blue( v.roll ) )
@@ -291,6 +316,13 @@ function M.new( popup_builder, content_transformer, db, config )
     return popup and popup.get_anchor_point()
   end
 
+  local function align_bottom()
+    options.point = { point = "BOTTOM", relative_point = "CENTER", x = 0, y = 0 }
+    if db.point and db.point.point ~= "BOTTOM" then
+      db.point = options.point
+    end
+  end
+
   ---@type RollingPopup
   return {
     show = show,
@@ -300,7 +332,8 @@ function M.new( popup_builder, content_transformer, db, config )
     backdrop_color = backdrop_color,
     get_frame = get_frame,
     ping = ping,
-    get_anchor_point = get_anchor_point
+    get_anchor_point = get_anchor_point,
+    align_bottom = align_bottom
   }
 end
 

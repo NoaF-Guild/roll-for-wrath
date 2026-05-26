@@ -48,7 +48,7 @@ function M.handle_events( main )
     elseif event == "CHAT_MSG_SYSTEM" then
       main.on_chat_msg_system( arg1, arg2, arg3, arg4, arg5 )
     elseif event == "CHAT_MSG_ADDON" then
-      main.on_chat_msg_addon( arg1, arg2 )
+      main.on_chat_msg_addon( arg1, arg2, arg3, arg4 )
     elseif event == "TRADE_SHOW" then
       main.trade_tracker.on_trade_show()
     elseif event == "TRADE_PLAYER_ITEM_CHANGED" then
@@ -65,7 +65,7 @@ function M.handle_events( main )
       main.master_loot_warning.on_player_target_changed()
       main.auto_master_loot.on_player_target_changed( arg1 )
     elseif event == "UI_ERROR_MESSAGE" then
-      local message = m.vanilla and arg1 or arg2
+      local message = m.vanilla and arg1 or arg2  -- vanilla: arg1; BCC/WotLK: arg2
 
       if message == "That player's inventory is full" then
         main.master_loot.on_recipient_inventory_full()
@@ -111,6 +111,7 @@ function M.handle_events( main )
   if m.vanilla then
     frame:RegisterEvent( "PARTY_MEMBERS_CHANGED" )
   else
+    -- BCC and WotLK both use GROUP_ROSTER_UPDATE
     frame:RegisterEvent( "GROUP_ROSTER_UPDATE" )
   end
 

@@ -24,16 +24,28 @@ function M.new( db, event_bus )
   local callbacks = {}
   local toggles = {
     [ "auto_loot" ] = { cmd = "auto-loot", display = "Auto-loot", help = "toggle auto-loot" },
+    [ "handle_plus_ones"] = { cmd = "Handle-plus-ones", display = "handle-plus-ones", help = "Toggle +1 handling for main-spec rolls." },
+    [ "plus_one_prompt"] = { cmd = "plus-one-prompt", display = "Plus-one-prompt", help = "Prompt the user for whether the award should give a +1" },
     [ "superwow_auto_loot_coins" ] = { cmd = "superwow-auto-loot-coins", display = "Auto-loot coins with SuperWoW", help = "toggle auto-loot coins with SuperWoW" },
     [ "auto_loot_messages" ] = { cmd = "auto-loot-messages", display = "Auto-loot messages", help = "toggle auto-loot messages" },
     [ "auto_loot_announce" ] = { cmd = "auto-loot-announce", display = "Announce auto-looted items", help = "toggle announcements of auto-loot items" },
+    [ "auto_class_announce" ] = { cmd = "auto-class-announce", display = "Announce class restriction on items", help = "toggle announcing of class restriction on items" },
+    [ "auto_tmog" ] = { cmd = "auto-tmog", display = "Disable transmog roll on trash loot", help = "toggle transmog roll on trash loot" },
     [ "show_ml_warning" ] = { cmd = "ml", display = "Master loot warning", help = "toggle master loot warning" },
     [ "auto_raid_roll" ] = { cmd = "auto-rr", display = "Auto raid-roll", help = "toggle auto raid-roll" },
     [ "auto_group_loot" ] = { cmd = "auto-group-loot", display = "Auto group loot", help = "toggle auto group loot" },
     [ "auto_master_loot" ] = { cmd = "auto-master-loot", display = "Auto master loot", help = "toggle auto master loot" },
     [ "rolling_popup_lock" ] = { cmd = "rolling-popup-lock", display = "Rolling popup lock", help = "toggle rolling popup lock" },
     [ "raid_roll_again" ] = { cmd = "raid-roll-again", display = string.format( "%s button", hl( "Raid roll again" ) ), help = string.format( "toggle %s button", hl( "Raid roll again" ) ) },
+    [ "show_player_roles"] = { cmd = "show-player-roles", display = "Show player roles", help="toggle player roles showing in rolling popup" },
+    [ "loot_frame_cursor" ] = { cmd = "loot-frame-cursor", display = "Display loot frame at cursor position", help = "toggle displaying loot frame at cursor position" },
     [ "classic_look" ] = { cmd = "classic-look", display = "Classic look", help = "toggle classic look", requires_reload = true },
+    [ "client_auto_hide_popup" ] = { cmd = "auto-hide", display = "Hide popup when rolling is complete", help = "toggle hiding of roll popup", client = true },
+    [ "client_auto_roll_sr" ] = { cmd = "auto-roll-sr", display = "Auto roll on SR items", help = "automatically roll on SR items", client = true },
+    [ "enable_quick_award_shift" ] = { cmd = "enable-quick-award-shift", display = "Enable Shift-click on award other button", help = "Enable Shift-click on award other button award to self" },
+    [ "enable_quick_award_ctrl" ] = { cmd = "enable-quick-award-ctrl", display = "Enable Ctrl-click on award other button", help = "Enable Ctrl-click on award others button to award pre-selected player" },
+    [ "disable_quick_award_confirm" ] = { cmd = "disable-quick-award-confirm", display = "Disable confirmation on quick award", help = "disable confirmation on quick award (shift/ctrl click)" },
+    [ "disable_quick_award_confirm_bop" ] = { cmd = "disable-quick-award-confirm-bop", display = "Allow BOP items to be quick awarded without confirmation", help = "allow BOP items to be quick looted without confirmation popup" },
   }
 
   local function notify_subscribers( event, value )
@@ -50,12 +62,27 @@ function M.new( db, event_bus )
     if not db.tmog_roll_threshold then db.tmog_roll_threshold = 98 end
     if not db.superwow_auto_loot_coins then db.superwow_auto_loot_coins = true end
     if db.tmog_rolling_enabled == nil then db.tmog_rolling_enabled = true end
+    if db.auto_tmog == nil then db.auto_tmog = false end
     if db.show_ml_warning == nil then db.show_ml_warning = false end
     if db.default_rolling_time_seconds == nil then db.default_rolling_time_seconds = 8 end
     if db.master_loot_frame_rows == nil then db.master_loot_frame_rows = 5 end
     if db.auto_master_loot == nil then db.auto_master_loot = true end
     if db.auto_loot == nil then db.auto_loot = true end
+    if db.handle_plus_ones == nil then db.handle_plus_ones = false end
+    if db.plus_one_prompt == nil then db.plus_one_prompt = false end
     if db.auto_loot_announce == nil then db.auto_loot_announce = true end
+    if db.loot_frame_cursor == nil then db.loot_frame_cursor = false end
+    if db.client_show_roll_popup == nil then db.client_show_roll_popup = "Off" end
+    if db.client_auto_hide_popup == nil then db.client_auto_hide_popup = false end
+    if db.quick_award_ctrl == nil then db.quick_award_ctrl = "Disabled" end
+    if not db.award_filter then
+      db.award_filter = {
+        item_quality = { Uncommon = 1, Rare = 1, Epic = 1, Legendary = 1 },
+        winning_roll = {},
+        roll_type = { MainSpec = 1, OffSpec = 1, Transmog = 1, SoftRes = 1, RR = 1 }
+      }
+    end
+    m.classic = db.classic_look
   end
 
   local function print( toggle_key )
@@ -103,7 +130,7 @@ function M.new( db, event_bus )
   end
 
   local function print_transmog_rolling_setting( show_threshold )
-    if m.bcc then return end
+    if m.bcc or m.wotlk then return end  -- Transmog rolling is Vanilla-only
     local tmog_rolling_enabled = db.tmog_rolling_enabled
     local threshold = show_threshold and tmog_rolling_enabled and string.format( " (%s)", hl( db.tmog_roll_threshold ) ) or ""
     info( string.format( "Transmog rolling is %s%s.", tmog_rolling_enabled and m.msg.enabled or m.msg.disabled, threshold ) )
@@ -125,12 +152,44 @@ function M.new( db, event_bus )
     print_transmog_rolling_setting()
 
     for toggle_key, setting in pairs( toggles ) do
-      if not setting.hidden then
+      if not setting.hidden and not setting.client then
         print( toggle_key )
       end
     end
 
     m.print( string.format( "For more info, type: %s", hl( "/rf config help" ) ) )
+  end
+
+  local function print_client_roll()
+    info( string.format( "Show roll popup: %s", hl( db.client_show_roll_popup ) ) )
+  end
+
+  local function print_client_settings()
+    print_header( "RollFor Client Configuration" )
+    print_client_roll()
+
+    for toggle_key, setting in pairs( toggles ) do
+      if not setting.hidden and setting.client then
+        print( toggle_key )
+      end
+    end
+
+    m.print( string.format( "For more info, type: %s", hl( "/rf config client help" ) ) )
+  end
+
+  local function print_client_help()
+    local v = function( name ) return string.format( "%s%s%s", hl( "<" ), grey( name ), hl( ">" ) ) end
+    local function rfc( cmd ) return string.format( "%s%s", blue( "/rf config client" ), cmd and string.format( " %s", hl( cmd ) ) or "" ) end
+
+    print_header( "RollFor Client Configuration Help" )
+    m.print( string.format( "%s - show configuration", rfc() ) )
+    m.print( string.format( "%s %s - set when to show roll popup", rfc( "show-roll" ), v( "Off|Always|Eligible" ) ) )
+
+    for _, setting in pairs( toggles ) do
+      if not setting.hidden and setting.client then
+        m.print( string.format( "%s - %s", rfc( setting.cmd ), setting.help ) )
+      end
+    end
   end
 
   local function configure_default_rolling_time( args )
@@ -219,6 +278,19 @@ function M.new( db, event_bus )
     info( string.format( "Usage: %s <threshold>", hl( "/rf config tmog" ) ) )
   end
 
+  local function configure_client_roll( args )
+    for value in string.gmatch( args, "config client show%-roll (%a+)" ) do
+      if ({ off = true, always = true, eligible = true })[ string.lower( value ) ] then
+        db.client_show_roll_popup = string.upper( string.sub( value, 1, 1 ) ) .. string.lower( string.sub( value, 2 ) )
+        print_client_roll()
+        return
+      end
+    end
+
+    print_client_roll()
+    info( string.format( "Usage: %s <Off|Always|Eligible>", hl( "/rf config client show-roll" ) ) )
+  end
+
   local function print_help()
     local v = function( name ) return string.format( "%s%s%s", hl( "<" ), grey( name ), hl( ">" ) ) end
     local function rfc( cmd ) return string.format( "%s%s", blue( "/rf config" ), cmd and string.format( " %s", hl( cmd ) ) or "" ) end
@@ -235,19 +307,20 @@ function M.new( db, event_bus )
     m.print( string.format( "%s - show OS rolling threshold ", rfc( "os" ) ) )
     m.print( string.format( "%s %s - set OS rolling threshold ", rfc( "os" ), v( "threshold" ) ) )
 
-    if m.vanilla then
+    if m.vanilla then  -- TMOG rolling is Vanilla-only; not available on BCC or WotLK
       m.print( string.format( "%s - toggle TMOG rolling", rfc( "tmog" ) ) )
       m.print( string.format( "%s %s - set TMOG rolling threshold", rfc( "tmog" ), v( "threshold" ) ) )
     end
 
     for _, setting in pairs( toggles ) do
-      if not setting.hidden then
+      if not setting.hidden and not setting.client then
         m.print( string.format( "%s - %s", rfc( setting.cmd ), setting.help ) )
       end
     end
 
     m.print( string.format( "%s - reset rolling popup position", rfc( "reset-rolling-popup" ) ) )
     m.print( string.format( "%s - reset loot frame position", rfc( "reset-loot-frame" ) ) )
+    m.print( string.format( "%s - show client configuration", rfc( "client" ) ) )
   end
 
   local function lock_minimap_button()
@@ -283,8 +356,26 @@ function M.new( db, event_bus )
       return
     end
 
+    if args == "config client" then
+      print_client_settings()
+      return
+    end
+
+    if args == "config client help" then
+      print_client_help()
+      return
+    end
+
+    if string.find( args, "^config client show%-roll" ) then
+      configure_client_roll( args )
+      return
+    end
+
     for toggle_key, setting in pairs( toggles ) do
-      if args == string.format( "config %s", setting.cmd ) then
+      if args == string.format( "config client %s", setting.cmd ) and setting.client then
+        toggle( toggle_key )()
+        return
+      elseif args == string.format( "config %s", setting.cmd ) and not setting.client then
         toggle( toggle_key )()
         return
       end
@@ -365,13 +456,20 @@ function M.new( db, event_bus )
     }
   end
 
+  local function enable_client_roll_popup()
+    if db.client_show_roll_popup == "Off" then
+      db.client_show_roll_popup = "Eligible"
+      info( string.format( "Show roll popup has been set to %s by lootmaster.", hl( db.client_show_roll_popup ) ) )
+    end
+  end
+
   init()
 
   ---@param setting_key string
   ---@param expansion Expansion?
   ---@param not_available_value any?
   local function get( setting_key, expansion, not_available_value )
-    if expansion and (expansion == "Vanilla" and m.bcc or expansion == "BCC" and m.vanilla) then
+    if expansion and (expansion == "Vanilla" and (m.bcc or m.wotlk) or expansion == "BCC" and m.vanilla) then
       return function()
         return not_available_value
       end
@@ -409,6 +507,13 @@ function M.new( db, event_bus )
     default_rolling_time_seconds = get( "default_rolling_time_seconds" ),
     master_loot_frame_rows = get( "master_loot_frame_rows" ),
     configure_master_loot_frame_rows = configure_master_loot_frame_rows,
+    client_show_roll_popup = get( "client_show_roll_popup" ),
+    client_auto_hide_popup = get( "client_auto_hide_popup" ),
+    enable_client_roll_popup = enable_client_roll_popup,
+    award_filter = get( "award_filter" ),
+    keep_award_data = get( "keep_award_data" ),
+    quick_award_ctrl = get( "quick_award_ctrl" ),
+    notify_subscribers = notify_subscribers
   }
 
   for toggle_key, _ in pairs( toggles ) do

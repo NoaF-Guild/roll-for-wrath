@@ -29,7 +29,10 @@ M.button_definitions = {
   [ "InstaRaidRoll" ] = button_definition( "Raid roll", 90 ),
   [ "RaidRoll" ] = button_definition( "Raid roll", 90 ),
   [ "RaidRollAgain" ] = button_definition( "Raid roll again", 130 ),
-  [ "Roll" ] = button_definition( "Roll", 60 )
+  [ "Roll" ] = button_definition( "Roll", 60 ),
+  [ "MSRoll" ] = button_definition( "Roll MS", 70 ),
+  [ "OSRoll" ] = button_definition( "Roll OS", 70 ),
+  [ "TMOGRoll" ] = button_definition( "Roll TMOG", 70 )
 }
 
 local top_padding = 11
@@ -102,10 +105,12 @@ function M.new( config )
       table.insert( result, {
         type = "roll",
         roll_type = roll.roll_type,
-        player_name = roll.player_name,
+        plus_ones = roll.plus_ones,
+        player_name =  roll.player_name,
         player_class = roll.player_class,
+        player_role = roll.player_role,
         roll = roll.roll,
-        padding = i == 1 and top_padding or nil
+        padding = i == 1 and top_padding or nil,
       } )
     end
   end
@@ -277,6 +282,29 @@ function M.new( config )
     return content
   end
 
+  ---@class RollingPopupAwardedData
+  ---@field item_link ItemLink
+  ---@field item_tooltip_link TooltipItemLink
+  ---@field item_texture ItemTexture
+  ---@field item_count number
+  ---@field rolls RollData[]
+  ---@field awarded table
+  ---@field buttons RollingPopupButtonWithCallback[]
+  ---@field type "Awarded"
+
+  ---@param data RollingPopupAwardedData
+  local function roll_content_awarded( data )
+    local content = {}
+    local player = m.colorize_player_by_class( data.awarded.player_name, data.awarded.player_class )
+
+    add_item( content, data.item_link, data.item_tooltip_link, data.item_texture, data.item_count )
+    add_rolls( content, data.rolls )
+    add_text( content, string.format( "The item was awarded to %s.", player ), top_padding )
+    add_buttons( content, data.buttons )
+
+    return content
+  end
+
   ---@class RollingPopupRollingCanceledData
   ---@field item_link ItemLink
   ---@field item_tooltip_link TooltipItemLink
@@ -339,6 +367,8 @@ function M.new( config )
       add_text( content, "Waiting for remaining rolls...", top_padding )
     elseif getn( data.roll_data.winners ) == 0 then
       add_empty_line( content, 5 )
+    else
+      add_winners( content, data.roll_data.winners, data.roll_data.strategy_type )
     end
 
     add_buttons( content, data.roll_data.buttons )
@@ -346,7 +376,7 @@ function M.new( config )
     return content
   end
 
-  ---@param data RollingPopupPreviewData|RollingPopupRaidRollData|RollingPopupRollData|RollingPopupRollingCanceledData|RollingPopupRaidRollingData|RollingPopupTieData
+  ---@param data RollingPopupPreviewData|RollingPopupRaidRollData|RollingPopupRollData|RollingPopupRollingCanceledData|RollingPopupRaidRollingData|RollingPopupTieData|RollingPopupAwardedData
   local function transform( data )
     if data.type == "Preview" then
       return preview_content( data )
@@ -358,6 +388,10 @@ function M.new( config )
 
     if data.type == "Roll" then
       return roll_content( data )
+    end
+
+    if data.type == "Awarded" then
+      return roll_content_awarded( data )
     end
 
     if data.type == "RollingCanceled" then

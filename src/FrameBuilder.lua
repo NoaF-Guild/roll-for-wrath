@@ -13,6 +13,7 @@ M.interface = {
 ---@alias FrameStyle
 ---| "Modern"
 ---| "Classic"
+---| "None"
 
 ---@class Vector2
 ---@field x number
@@ -53,24 +54,30 @@ M.interface = {
 ---@field SetWidth fun( frame: Frame, width: number )
 ---@field SetHeight fun( frame: Frame, height: number )
 ---@field SetPoint fun( frame: Frame, point: string, relative_frame: Frame|string, relative_point: string, x: number, y: number )
+---@field SetAllPoints fun( frame: Frame, relativeTo?: Frame|string, doResize?: boolean )
+---@field SetScript fun( frame: Frame, scriptTypeName: string, script: function|nil )
 ---@field GetScale fun(): number
 ---@field GetWidth fun(): number
 ---@field GetHeight fun(): number
+---@field StartSizing fun( self: Frame, resizePoint: string?, alwaysStartFromMouse: boolean? )
+---@field StopMovingOrSizing fun()
 ---@field ClearAllPoints fun()
 ---@field IsVisible fun( self ): boolean
 ---@field GetName fun(): string?
 ---@field SetFrameStrata fun( self: Frame, strata: string )
+---@field GetFrameLevel fun( self: Frame ): number
+---@field SetFrameLevel fun( self: Frame, level: number )
 ---@field CreateTexture fun( self: Frame, name: string?, layer: string ): Texture
 ---@field SetNormalTexture fun( self: Frame, texture: string )
 ---@field SetPushedTexture fun( self: Frame, texture: string )
+---@field SetHighlightTexture fun( self: Frame, texture: string )
 ---@field CreateFontString fun( self: Frame, name: string?, layer: string, font: string ): FontString
 ---@field SetScript fun( self: Frame, event: string, callback: function )
 ---@field GetTop fun(): number
 ---@field GetBottom fun(): number
 ---@field GetLeft fun(): number
 ---@field GetRight fun(): number
----@field SetPushedTexture fun( self: Frame, texture: string )
----@field SetHighlightTexture fun( self: Frame, texture: string )
+---@field EnableMouse fun( self: Frame, enabled: boolean? )
 
 ---@alias Anchor table
 
@@ -103,9 +110,9 @@ M.interface = {
 ---| "TOOLTIP"
 
 ---@class FrameBuilder
+---@field parent fun( self: FrameBuilder, parent: Frame ): FrameBuilder
 ---@field name fun( self: FrameBuilder, name: string ): FrameBuilder
 ---@field type fun( self: FrameBuilder, name: string ): FrameBuilder
----@field parent fun( self: FrameBuilder, parent: Frame ): FrameBuilder
 ---@field height fun( self: FrameBuilder, height: number ): FrameBuilder
 ---@field width fun( self: FrameBuilder, width: number ): FrameBuilder
 ---@field point fun( self: FrameBuilder, p: Point ): FrameBuilder
@@ -119,6 +126,8 @@ M.interface = {
 ---@field frame_style fun( self: FrameBuilder, frame_style: FrameStyle ): FrameBuilder
 ---@field on_drag_stop fun( self: FrameBuilder, callback: function ): FrameBuilder
 ---@field movable fun( self: FrameBuilder ): FrameBuilder
+---@field resizable fun( self ): FrameBuilder
+---@field on_resize fun( self: FrameBuilder, callback: function ): FrameBuilder
 ---@field enable_mouse fun( self: FrameBuilder ): FrameBuilder
 ---@field border_size fun( self: FrameBuilder, border_size: number ): FrameBuilder
 ---@field on_show fun( self: FrameBuilder, on_show: function ): FrameBuilder
@@ -195,7 +204,7 @@ function M.new()
           edgeFile = "Interface\\Buttons\\WHITE8X8",
           tile = false,
           tileSize = 0,
-          edgeSize = 0.8,
+          edgeSize = options.border_size or 0.8,
           insets = { left = 0, right = 0, top = 0, bottom = 0 }
         } )
       elseif options.frame_style == "Classic" then
@@ -206,6 +215,15 @@ function M.new()
           tileSize = 22,
           edgeSize = options.border_size or 24,
           insets = { left = 5, right = 5, top = 5, bottom = 5 }
+        } )
+      elseif options.frame_style == "None" then
+        frame:SetBackdrop( {
+          bgFile = options.bg_file or "Interface/Buttons/WHITE8x8",
+          edgeFile = options.edge_file,
+          tile = true,
+          tileSize = 22,
+          edgeSize = options.border_size or 0,
+          insets = { left = 0, right = 0, top = 0, bottom = 0 }
         } )
       end
 
@@ -288,6 +306,18 @@ function M.new()
         end )
       else
         frame:SetMovable( false )
+      end
+
+      if options.resizable then
+        frame:SetResizable( true )
+
+        if options.on_resize and frame:IsResizable() then
+          frame:SetScript( "OnSizeChanged", function()
+            options.on_resize( frame )
+          end )
+        end
+      else
+        frame:SetResizable( false )
       end
 
       frame:EnableMouse( true )
@@ -498,6 +528,16 @@ function M.new()
     return self
   end
 
+  local function resizable( self )
+    options.resizable = true
+    return self
+  end
+
+  local function on_resize( self, callback )
+    options.on_resize = callback
+    return self
+  end
+
   local function border_size( self, v )
     options.border_size = v
     return self
@@ -561,6 +601,8 @@ function M.new()
     frame_style = frame_style,
     on_drag_stop = on_drag_stop,
     movable = movable,
+    resizable = resizable,
+    on_resize = on_resize,
     border_size = border_size,
     on_show = on_show,
     on_hide = on_hide,

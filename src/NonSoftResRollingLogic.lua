@@ -62,9 +62,13 @@ function M.new(
   local os_threshold = config.os_roll_threshold()
   local tmog_threshold = config.tmog_roll_threshold()
   local tmog_rolling_enabled = config.tmog_rolling_enabled()
+  tmog_rolling_enabled = tmog_rolling_enabled and (item.is_boss_loot or not config.auto_tmog() )
 
   local function sort_rolls()
     local f = function( a, b )
+      if a.roll_type == RollType.MainSpec and a.player.plus_ones ~= b.player.plus_ones then
+        return a.player.plus_ones < b.player.plus_ones
+      end
       if a.roll == b.roll then
         return a.player.name < b.player.name
       else
@@ -134,12 +138,14 @@ function M.new(
         local result = {}
         local last_roll
         local last_type
+        local last_plus_ones
 
         for _, roll in ipairs( all_rolls ) do
-          if not last_roll or last_roll ~= roll.roll or last_type ~= roll.roll_type then
+          if not last_roll or last_roll ~= roll.roll or last_type ~= roll.roll_type or roll.roll_type == RollType.MainSpec and last_plus_ones ~= roll.player.plus_ones  then
             table.insert( result, { roll } )
             last_roll = roll.roll
             last_type = roll.roll_type
+            last_plus_ones = roll.player.plus_ones
           else
             table.insert( result[ getn( result ) ], roll )
           end
@@ -185,7 +191,7 @@ function M.new(
     player.rolls = player.rolls - 1
     local t = ms_roll and mainspec_rolls or os_roll and offspec_rolls or tmog_rolls
     table.insert( t, make_roll( player, roll_type, roll ) )
-    controller.roll_was_accepted( player.name, player.class, roll_type, roll )
+    controller.roll_was_accepted( player.name, player.class, roll_type, roll, player.plus_ones )
 
     if have_all_rolls_been_exhausted() then find_winner() end
   end
@@ -212,11 +218,17 @@ function M.new(
 
   local function start_rolling()
     local count_str = item_count > 1 and string.format( "%sx", item_count ) or ""
-    local tmog_info = config.tmog_rolling_enabled() and string.format( " or /roll %s (TMOG)", config.tmog_roll_threshold() ) or ""
+    local tmog_info = tmog_rolling_enabled and string.format( " or /roll %s (TMOG)", config.tmog_roll_threshold() ) or ""
     local default_ms = config.ms_roll_threshold() ~= 100 and string.format( "%s ", config.ms_roll_threshold() ) or ""
     local roll_info = string.format( " /roll %s(MS) or /roll %s (OS)%s", default_ms, config.os_roll_threshold(), tmog_info )
     local info_str = info and info ~= "" and string.format( " %s", info ) or roll_info
     local x_rolls_win = item_count > 1 and string.format( ". %d top rolls win.", item_count ) or ""
+
+    if item.classes and config.auto_class_announce() then
+      local class_str = table.concat( item.classes, "s, " )
+      class_str = string.gsub( class_str, ", (%S+)$", " and %1" )
+      info_str = string.format( " %ss", class_str )
+    end
 
     chat.announce( string.format( "Roll for %s%s:%s%s", count_str, item.link, info_str, x_rolls_win ), true )
     accept_rolls()

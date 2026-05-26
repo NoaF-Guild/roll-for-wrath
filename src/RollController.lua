@@ -14,7 +14,7 @@ local hl = m.colors.hl
 
 ---@class RollControllerFacade
 ---@field roll_was_ignored fun( player_name: string, player_class: string?, roll_type: RollType, roll: number, reason: string )
----@field roll_was_accepted fun( player_name: string, player_class: string, roll_type: RollType, roll: number )
+---@field roll_was_accepted fun( player_name: string, player_class: string, roll_type: RollType, roll: number, plus_ones: number )
 ---@field tick fun( seconds_left: number )
 ---@field winners_found fun( item: Item, item_count: number, winners: Winner[], strategy: RollingStrategyType )
 ---@field finish fun()
@@ -50,6 +50,7 @@ local hl = m.colors.hl
 ---@field cancel_rolling fun()
 ---@field rolling_started fun( rolling_strategy: RollingStrategyType, item: Item, count: number, seconds: number?, message: string?, rolling_players: RollingPlayer[]? )
 ---@field award_confirmed fun( player: ItemCandidate|Winner, item: MasterLootDistributableItem )
+---@field get_roll_tracker fun( item_id: number ): RollTracker
 ---@field update fun( item_id: ItemId )
 
 ---@param ml_candidates MasterLootCandidates
@@ -58,6 +59,7 @@ local hl = m.colors.hl
 ---@param rolling_popup RollingPopup
 ---@param loot_award_popup LootAwardPopup
 ---@param player_selection_frame MasterLootCandidateSelectionFrame
+---@param player_info PlayerInfo
 function M.new(
     ml_candidates,
     softres,
@@ -65,7 +67,8 @@ function M.new(
     config,
     rolling_popup,
     loot_award_popup,
-    player_selection_frame
+    player_selection_frame,
+    player_info
 )
   local roll_trackers = {} ---@type table<ItemId, RollTracker>
   local callbacks = {}
@@ -341,6 +344,32 @@ function M.new(
 
     table.insert( buttons,
       button( "AwardOther", function()
+        if m.is_shift_key_down() and config.enable_quick_award_shift() then
+          ---@type ItemCandidate
+          local candidate = m.find( player_info.get_name(), candidates, "name" )
+
+          if config.disable_quick_award_confirm() and ( config.disable_quick_award_confirm_bop() or dropped_item.bind ~= "BindOnPickup" ) then
+            award_confirmed( candidate, dropped_item )
+          else
+            show_master_loot_confirmation( candidate, dropped_item, strategy_type )
+          end
+          return
+        end
+
+        if m.is_ctrl_key_down() and config.enable_quick_award_ctrl() then
+          ---@type ItemCandidate
+          local candidate = m.find( config.quick_award_ctrl(), candidates, "name" )
+
+          if candidate and candidate.online then
+            if config.disable_quick_award_confirm() and ( config.disable_quick_award_confirm_bop() or dropped_item.bind ~= "BindOnPickup" ) then
+              award_confirmed( candidate, dropped_item )
+            else
+              show_master_loot_confirmation( candidate, dropped_item, strategy_type )
+            end
+            return
+          end
+        end
+
         ---@type MasterLootCandidate[]
         local players = m.map( candidates,
           ---@param candidate ItemCandidate
@@ -670,6 +699,7 @@ function M.new(
     local roll_tracker = get_roll_tracker( currently_displayed_item and currently_displayed_item.id )
     local data = roll_tracker.get()
     local item = data.item
+    local winners = data.winners
     local first_iteration = data.iterations[ 1 ]
     local waiting = data.status.type == "Waiting" or false
 
@@ -681,7 +711,7 @@ function M.new(
       local candidates = slot and ml_candidates.get( slot ) or {}
 
       ---@type WinnerWithAwardCallback[]
-      local winners = m.map( data.winners,
+      winners = m.map( data.winners,
         ---@param player Winner
         function( player )
           if type( player ) ~= "table" then return end -- Fucking lua50 and its n.
@@ -732,7 +762,7 @@ function M.new(
         item_texture = item.texture,
         item_count = data.item_count,
         rolls = first_iteration.rolls,
-        winners = data.winners,
+        winners = winners,
         strategy_type = first_iteration.rolling_strategy,
         buttons = buttons,
         waiting_for_rolls = waiting or false,
@@ -827,13 +857,25 @@ function M.new(
     preview_sr_items_not_equal_to_item_count( soft_ressers, item, item_count, dropped_item, buttons, candidate_count, candidates )
   end
 
-  local function on_roll( player_name, player_class, roll_type, roll )
+  local function on_roll( player_name, player_class, roll_type, roll, plus_ones )
     M.debug.add( string.format( "on_roll( %s, %s, %s, %s )", player_name, player_class, roll_type, roll ) )
     local roll_tracker = get_roll_tracker( currently_displayed_item and currently_displayed_item.id )
-    roll_tracker.add( player_name, player_class, roll_type, roll )
+    local roller = m.find( player_name, softres.get_all_rollers(), "name")
+    roll_tracker.add( player_name, player_class, roller and roller.role, roll_type, roll, plus_ones )
 
     local data, current_iteration = roll_tracker.get()
     local strategy_type = current_iteration and current_iteration.rolling_strategy
+
+    if strategy_type == "NormalRoll" or strategy_type == "SoftResRoll" or strategy_type == "TieRoll" then
+      notify_subscribers( "roll", {
+        player_name = player_name,
+        player_class = player_class,
+        player_role = roller and roller.role,
+        roll_type = roll_type,
+        plus_ones = plus_ones,
+        roll = roll,
+      } )
+    end
 
     if strategy_type == "NormalRoll" or strategy_type == "SoftResRoll" then
       local waiting_for_rolls = data.status.type == "Waiting" or false
@@ -1254,6 +1296,7 @@ function M.new(
     cancel_rolling = cancel_rolling,
     rolling_started = rolling_started,
     award_confirmed = award_confirmed,
+    get_roll_tracker = get_roll_tracker,
     update = update
   }
 end

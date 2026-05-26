@@ -19,8 +19,9 @@ local clear = m.clear_table
 ---@param loot_facade LootFacade
 ---@param item_utils ItemUtils
 ---@param tooltip_reader TooltipReader
+---@param boss_list BossList
 ---@return LootList
-function M.new( loot_facade, item_utils, tooltip_reader, dummy_items_fn )
+function M.new( loot_facade, item_utils, tooltip_reader, boss_list, dummy_items_fn )
   interface.validate( loot_facade, m.LootFacade.interface )
   interface.validate( item_utils, m.ItemUtils.interface )
 
@@ -66,6 +67,17 @@ function M.new( loot_facade, item_utils, tooltip_reader, dummy_items_fn )
         local item_name = link and item_utils.get_item_name( link )
         local tooltip_link = link and item_utils.get_tooltip_link( link )
         local bind_type = tooltip_reader.get_slot_bind_type( slot )
+        local classes = tooltip_reader.get_slot_classes( slot )
+
+        local is_boss_loot = false
+        if m.api.UnitName then -- workaround to make tests work
+          local target_name = m.target_name()
+          if target_name and m.target_dead() then
+            local zone_name = m.api.GetRealZoneText()
+            local bosses = boss_list[ zone_name ] or {}
+            is_boss_loot = m.table_contains_value( bosses, target_name )
+          end
+        end
 
         if item_id and item_name then
           add_item( slot,
@@ -77,7 +89,9 @@ function M.new( loot_facade, item_utils, tooltip_reader, dummy_items_fn )
               info and info.quality,
               info and info.quantity,
               info and info.texture,
-              bind_type
+              bind_type,
+              classes,
+              is_boss_loot
             ), item_count )
 
           item_count = item_count + 1

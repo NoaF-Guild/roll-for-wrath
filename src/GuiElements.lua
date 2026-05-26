@@ -15,6 +15,10 @@ local hl = m.colors.hl
 ---@field button fun( parent: Frame ): Frame
 ---@field info fun( parent: Frame ): Frame
 ---@field dropped_item fun( parent: Frame, text: string ): Frame
+---@field tiny_button fun( parent: Frame, text: string?, tooltip: string?, color: table|string?, font-size: number?): Frame
+---@field resize_grip fun( parent: Frame, on_start: function, on_end: function ): Frame
+---@field dropdown fun( parent: Frame, button: string, items_data: table, on_select: function ): Frame
+---@field titlebar fun( parent: Frame, title: string, on_close: function? )
 
 local M = {}
 
@@ -291,6 +295,340 @@ function M.award_button( parent )
   button:GetFontString():SetPoint( "CENTER", 0, -1 )
 
   return button
+end
+
+---@param parent Frame
+---@param text string?
+---@param tooltip string?
+---@param color string|table?
+---@param font_size number?
+function M.tiny_button( parent, text, tooltip, color, font_size )
+  local font_x, font_y
+  local button = m.api.CreateFrame( "Button", nil, parent )
+  if not text then text = 'X' end
+
+  if type( color ) == "string" and color and color ~= "" then
+    local str_color = color
+    color = {}
+    color.r, color.g, color.b, color.a = m.hex_to_rgba( str_color )
+  end
+
+  if m.classic then
+    if not color then color = { r = .9, g = .8, b = .25 } end
+    button:SetWidth( 18 )
+    button:SetHeight( 18 )
+
+    button:SetHighlightTexture( "Interface\\Buttons\\UI-Panel-MinimizeButton-Highlight" )
+    if text == 'X' then
+      button:SetNormalTexture( "Interface\\Buttons\\UI-Panel-MinimizeButton-Up" )
+      button:SetPushedTexture( "Interface\\Buttons\\UI-Panel-MinimizeButton-Down" )
+    else
+      button:SetNormalTexture( "Interface\\AddOns\\RollFor\\assets\\tiny-button-up.tga" )
+      button:SetPushedTexture( "Interface\\AddOns\\RollFor\\assets\\tiny-button-down.tga" )
+    end
+    button:GetHighlightTexture():SetTexCoord( .1875, .78125, .21875, .78125 )
+    button:GetNormalTexture():SetTexCoord( .1875, .78125, .21875, .78125 )
+    button:GetPushedTexture():SetTexCoord( .1875, .78125, .21875, .78125 )
+
+    if text ~= 'X' then
+      button:SetText( text )
+      button:SetPushedTextOffset( -1.5, -1.5 )
+
+      if string.upper( text ) == text then
+        font_x, font_y = 0, 0
+        font_size = font_size or 13
+      else
+        font_x, font_y = -1, 2
+        font_size = font_size or 15
+      end
+    end
+  else
+    if not color then color = { r = 1, g = .25, b = .25 } end
+    button:SetBackdrop( {
+      bgFile = "Interface/Tooltips/UI-Tooltip-Background",
+      edgeFile = "Interface\\Buttons\\WHITE8X8",
+      tile = false,
+      tileSize = 0,
+      edgeSize = 0.5,
+      insets = { left = 0, right = 0, top = 0, bottom = 0 }
+    } )
+    button:SetBackdropColor( 0, 0, 0, 1 )
+    button:SetBackdropBorderColor( .2, .2, .2, 1 )
+    button:SetHeight( 13 )
+    button:SetWidth( 13 )
+    button:SetText( text )
+    button:SetPushedTextOffset( 0, 0 )
+
+    if string.upper( text ) == text then
+      font_x = text == "?" and -.5 or 0
+      font_y = 0.5
+      font_size = font_size or 10
+    else
+      font_x, font_y = -.5, 1.5
+      font_size = font_size or 14
+    end
+  end
+
+  if not m.classic or text ~= "X" then
+    button:GetFontString():SetFont( "FONTS\\FRIZQT__.TTF", font_size )
+    button:GetFontString():SetTextColor( color.r, color.g, color.b, color.a or 1 )
+    button:GetFontString():SetPoint( "CENTER", font_x, font_y )
+  end
+
+  button:SetScript( "OnEnter", function()
+    local self = button
+    self:SetBackdropBorderColor( color.r, color.g, color.b, color.a or 1 )
+    if tooltip then
+      m.api.GameTooltip:SetOwner( button, "ANCHOR_RIGHT" )
+      m.api.GameTooltip:SetText( tooltip )
+      m.api.GameTooltip:SetScale( 0.8 )
+      m.api.GameTooltip:Show()
+    end
+  end )
+  button:SetScript( "OnLeave", function()
+    local self = button
+    if not self.active and not m.classic then
+      self:SetBackdropBorderColor( .2, .2, .2, 1 )
+    end
+    if tooltip and m.api.GameTooltip:IsVisible() then
+      m.api.GameTooltip:SetScale( 1 )
+      m.api.GameTooltip:Hide()
+    end
+  end )
+
+  return button
+end
+
+function M.resize_grip( parent, on_start, on_end )
+  local button = m.api.CreateFrame( "Button", nil, parent )
+  button:SetWidth( 16 )
+  button:SetHeight( 16 )
+  button:SetNormalTexture( "Interface\\AddOns\\RollFor\\assets\\resize-grip.tga", "ARTWORK" )
+  button:GetNormalTexture():SetAllPoints( button )
+
+  button:SetScript( "OnEnter", function()
+    button:GetNormalTexture():SetBlendMode( "ADD" )
+  end )
+  button:SetScript( "OnLeave", function()
+    button:GetNormalTexture():SetBlendMode( "BLEND" )
+  end )
+  button:SetScript( "OnMouseDown", function()
+    parent:StartSizing( "BOTTOMRIGHT" )
+    if on_start then on_start( parent ) end
+  end )
+  button:SetScript( "OnMouseUp", function()
+    parent:StopMovingOrSizing()
+    if on_end then on_end( parent ) end
+  end )
+
+  return button
+end
+
+function M.checkbox( parent, text, on_change )
+  local frame = m.api.CreateFrame( "Button", nil, parent )
+  frame:SetPoint( "LEFT", 5, 0 )
+  frame:SetPoint( "RIGHT", -5, 0 )
+  frame:SetHeight( 16 )
+  frame:SetBackdrop( {
+    bgFile = "Interface/Buttons/WHITE8x8",
+  } )
+  frame:SetBackdropColor( 0.125, 0.624, 0.976, 0 )
+  frame:EnableMouse()
+
+  local cb = m.api.CreateFrame( "CheckButton", nil, frame, "UICheckButtonTemplate" )
+  cb:SetWidth( 14 )
+  cb:SetHeight( 14 )
+  cb:SetPoint( "LEFT", 2, 0 )
+  cb:EnableMouse( false )
+  cb:SetNormalTexture( nil )
+  cb:SetPushedTexture( nil )
+  cb:SetHighlightTexture( nil )
+  cb:SetBackdrop( {
+    bgFile = "Interface/Buttons/WHITE8x8",
+    edgeFile = "Interface/Buttons/WHITE8x8",
+    edgeSize = 0.5,
+    insets = { left = 0, right = 0, top = 0, bottom = 0 }
+  } )
+  cb:SetBackdropColor( 0, 0, 0, 1 )
+  cb:SetBackdropBorderColor( .2, .2, .2, 1 )
+  frame.checkbox = cb
+
+  local label = M.create_text_in_container( "Frame", frame, 1, "LEFT", text )
+  label.inner:SetJustifyH( "LEFT" )
+  label:SetWidth( label.inner:GetWidth() )
+  label:SetPoint( "LEFT", cb, "RIGHT", 5, 0 )
+  frame.label = label
+
+  frame:SetWidth( cb:GetWidth() + label:GetWidth() + 5 )
+  frame:SetScript( "OnClick", function()
+    cb:SetChecked( not cb:GetChecked() )
+    if on_change then on_change( cb:GetChecked() ) end
+  end )
+
+  return frame
+end
+
+function M.dropdown( anchor_frame, button, items_data, on_select )
+  local dropdown = m.api.CreateFrame( "Frame", nil, m.api.WorldFrame )
+  dropdown:SetFrameStrata( "TOOLTIP" )
+  dropdown:SetBackdrop( {
+    bgFile = "Interface/Buttons/WHITE8x8",
+    edgeFile = "Interface/Buttons/WHITE8x8",
+    edgeSize = 0.5,
+  } )
+  dropdown:SetBackdropColor( 0, 0, 0, 1 )
+  dropdown:SetBackdropBorderColor( .2, .2, .2, 1 )
+  dropdown:EnableMouse( true )
+  dropdown:Hide()
+  dropdown.value = "dropdown"
+
+  dropdown:SetScript( "OnLeave", function()
+    if m.api.MouseIsOver( dropdown ) then
+      return
+    end
+    dropdown:Hide()
+  end )
+
+  dropdown:SetScript( "OnShow", function()
+    for v in ipairs( M.dropdowns ) do
+      if M.dropdowns[ v ] ~= dropdown then
+        M.dropdowns[ v ]:Hide()
+      end
+    end
+  end )
+
+  if not M.dropdowns then M.dropdowns = {} end
+  table.insert( M.dropdowns, dropdown )
+
+  local width = 0
+  local height = 4
+
+  dropdown.items = {}
+  for _, item_data in items_data do
+    local item
+
+    local function blue_hover( a )
+      item:SetBackdropColor( 0.125, 0.624, 0.976, a )
+    end
+
+    if item_data.type == "checkbox" then
+      item = m.GuiElements.checkbox( dropdown, item_data.text, function( is_checked )
+        if this.on_select then
+          this.on_select( this.value, is_checked )
+        end
+        if on_select then
+          on_select( this.value, is_checked )
+        end
+      end )
+      item.value = item_data.value
+
+      if item_data.checked then
+        item.checkbox:SetChecked( true )
+      end
+    else
+      item = M.create_text_in_container( "Button", dropdown, 20, nil, item_data.text, "label", "GameFontNormal" )
+      item:SetBackdrop( {
+        bgFile = "Interface/Buttons/WHITE8x8",
+      } )
+      item:SetHeight( 16 )
+      item.label:SetTextColor( 0.1254, 0.6235, 0.9764, 1 )
+      item.label:SetPoint( "LEFT", 5, 0 )
+      item:SetWidth( item.label:GetWidth() )
+      item.value = item_data.value
+
+      item:SetScript( "OnClick", function()
+        dropdown:Hide()
+        if on_select then
+          on_select( this.value, this.label:GetText() )
+        end
+      end )
+    end
+
+    blue_hover( 0 )
+    item:SetScript( "OnEnter", function() blue_hover( .2 ) end )
+    item:SetScript( "OnLeave", function() blue_hover( 0 ) end )
+    item:SetPoint( "TOPLEFT", 5, -height )
+    item:SetPoint( "RIGHT", -5, 0 )
+
+    if item:GetWidth() > width then
+      width = item:GetWidth()
+    end
+    height = height + 18
+
+    table.insert( dropdown.items, item )
+  end
+
+  dropdown:SetWidth( width + 20 )
+  dropdown:SetHeight( height + 5 )
+
+  if (anchor_frame and button) then
+    anchor_frame:SetScript( "OnMouseUp", function()
+      if arg1 == button then
+        if dropdown:IsVisible() then
+          dropdown:Hide()
+        else
+          dropdown:Show()
+        end
+      end
+    end )
+  end
+
+  return dropdown
+end
+
+---@param parent Frame
+---@param title string
+---@param on_close function
+function M.titlebar( parent, title, on_close )
+  local frame = m.api.CreateFrame( "Frame", nil, parent )
+  frame:SetHeight( 32 )
+  if not m.classic then
+    frame:SetPoint( "TOPLEFT", 0, 5 )
+    frame:SetPoint( "RIGHT", 0, 0 )
+  else
+    frame:SetPoint( "TOPLEFT", 3, 2 )
+    frame:SetPoint( "RIGHT", -3, 2 )
+    frame:SetBackdrop( {
+      bgFile = "Interface\\AddOns\\RollFor\\assets\\titlebar-top.tga",
+      tile = true,
+      tileSize = 32,
+      edgeSize = 0,
+      insets = { left = 30, right = 30, top = 0, bottom = 0 }
+    } )
+
+    local topLeft = frame:CreateTexture( nil, "BORDER" )
+    topLeft:SetTexture( "Interface\\AddOns\\RollFor\\assets\\titlebar-topleft.tga" )
+    topLeft:SetPoint( "TOPLEFT", frame, "TOPLEFT", 0, 0 )
+    topLeft:SetWidth( 64 )
+    topLeft:SetHeight( 32 )
+
+    local topRight = frame:CreateTexture( nil, "BORDER" )
+    topRight:SetTexture( "Interface\\AddOns\\RollFor\\assets\\titlebar-topright.tga" )
+    topRight:SetPoint( "TOPRIGHT", frame, "TOPRIGHT", 0, 0 )
+    topRight:SetWidth( 64 )
+    topRight:SetHeight( 32 )
+  end
+
+  local label = frame:CreateFontString( nil, "ARTWORK", "GameFontNormalSmall" )
+  label:SetPoint( "TOPLEFT", 8, m.classic and -11 or -13 )
+  label:SetPoint( "RIGHT", m.classic and -29 or 0, 0 )
+  label:SetJustifyH( "CENTER" )
+  label:SetTextColor( 1, 1, 1 )
+  label:SetText( title )
+  frame.title = label
+
+  local close_btn = M.tiny_button( parent, "X", "Close Window" )
+  close_btn:SetPoint( "TOPRIGHT", -7, m.classic and -5 or -7 )
+  close_btn:SetScript( "OnClick", function()
+    if on_close then
+      on_close()
+    else
+      if parent then parent:Hide() end
+    end
+  end )
+  frame.close_btn = close_btn
+
+  return frame
 end
 
 function M.info( parent )
