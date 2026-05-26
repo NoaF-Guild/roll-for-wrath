@@ -283,7 +283,7 @@ function SingleWinnerRaidRollSpec:should_auto_raid_roll_if_no_one_rolled_and_rep
   rf.rolling_popup.should_display(
     item_link( item2, 1 ),
     text( "Obszczymucha wins the raid-roll.", 11 ),
-    buttons( "RaidRollAgain", "Close" )
+    buttons( "AwardWinner", "RaidRollAgain", "Close" )
   )
 
   -- When
