@@ -55,7 +55,7 @@ function WaitForRemainingRollsSpec:should_wait_for_all_sr_players_to_roll_and_aw
     item_link( item2, 1 ),
     roll_placeholder( p2, 11 ),
     roll_placeholder( p1 ),
-    buttons( "Roll", "AwardOther", "Close" )
+    buttons( "SRRoll", "Roll", "AwardOther", "Close" )
   )
 
   -- When
@@ -234,7 +234,7 @@ function WaitForRemainingRollsSpec:should_cancel_rolling_and_display_initial_set
     item_link( item2, 1 ),
     roll_placeholder( p2, 11 ),
     roll_placeholder( p1 ),
-    buttons( "Roll", "AwardOther", "Close" )
+    buttons( "SRRoll", "Roll", "AwardOther", "Close" )
   )
 
   -- When
@@ -270,7 +270,7 @@ function WaitForRemainingRollsSpec:should_cancel_rolling_and_display_initial_set
     item_link( item2, 1 ),
     roll_placeholder( p2, 11 ),
     roll_placeholder( p1 ),
-    buttons( "Roll", "AwardOther", "Close" )
+    buttons( "SRRoll", "Roll", "AwardOther", "Close" )
   )
 end
 
@@ -317,7 +317,7 @@ function WaitForRemainingRollsSpec:should_wait_for_all_sr_players_to_roll_and_aw
     roll_placeholder( p3, 11 ),
     roll_placeholder( p2 ),
     roll_placeholder( p1 ),
-    buttons( "Roll", "AwardOther", "Close" )
+    buttons( "SRRoll", "Roll", "AwardOther", "Close" )
   )
 
   -- When
@@ -570,7 +570,7 @@ function SoftResTieRollSpec:should_display_tie_rolls()
     item_link( item2, 1 ),
     roll_placeholder( p2, 11 ),
     roll_placeholder( p1 ),
-    buttons( "Roll", "AwardOther", "Close" )
+    buttons( "SRRoll", "Roll", "AwardOther", "Close" )
   )
 
   -- When
@@ -767,7 +767,7 @@ function SoftResPlusSpec:should_use_sr_plus_values()
     item_link( item2, 1 ),
     roll_placeholder( p2, 11 ),
     roll_placeholder( p1 ),
-    buttons( "Roll", "AwardOther", "Close" )
+    buttons( "SRRoll", "Roll", "AwardOther", "Close" )
   )
 
   -- When
@@ -864,6 +864,7 @@ function SrCountEqualsItemCountSpec:should_not_show_sr_placeholders_when_sr_play
   -- Then (popup shows winners without SR placeholder rolls)
   rf.rolling_popup.should_display(
     item_link( item, 2 ),
+    text( "Rolling finished. No one rolled.", 11 ),
     text( "Obszczymucha soft-ressed this item.", 11 ),
     individual_award_button,
     text( "Psikutas soft-ressed this item.", 8 ),
@@ -891,8 +892,11 @@ function TwoSrPlayersThreeItemsSpec:should_handle_two_sr_players_with_three_item
   -- Then
   rf.rolling_popup.should_display(
     item_link( item, 3 ),
+    text( "Rolling finished. No one rolled.", 11 ),
     text( "Obszczymucha soft-ressed this item.", 11 ),
-    text( "Psikutas soft-ressed this item.", 2 ),
+    individual_award_button,
+    text( "Psikutas soft-ressed this item.", 8 ),
+    individual_award_button,
     buttons( "RaidRoll", "Close" )
   )
 end
