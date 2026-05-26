@@ -49,27 +49,14 @@ function M.new( api )
   end
 
   local function get_loot_slot_info( slot )
-    if m.vanilla or m.wotlk then
-      -- Vanilla and WotLK: GetLootSlotInfo returns texture, name, quantity, quality (4 values)
-      local texture, name, quantity, quality = api.GetLootSlotInfo( slot )
+    local texture, name, quantity, quality = api.GetLootSlotInfo( slot )
 
-      return texture and {
-        texture = texture,
-        name = name,
-        quantity = quantity,
-        quality = quality,
-      } or nil
-    else
-      -- BCC/Retail: GetLootSlotInfo returns texture, name, quantity, currencyID, quality (5 values)
-      local texture, name, quantity, _, quality = api.GetLootSlotInfo( slot )
-
-      return texture and {
-        texture = texture,
-        name = name,
-        quantity = quantity,
-        quality = quality,
-      } or nil
-    end
+    return texture and {
+      texture = texture,
+      name = name,
+      quantity = quantity,
+      quality = quality,
+    } or nil
   end
 
   local function is_loot_slot_item( slot )
@@ -92,27 +79,12 @@ function M.new( api )
   -- Group / loot method primitives
 
   local function get_loot_method()
-    if m.vanilla then
-      -- Vanilla: GetLootMethod returns (method, id)
-      -- Party: id = 0-4 (0 = you)
-      -- Raid: id = 1-40 (raid member index)
-      local method, id = api.GetLootMethod()
-      return { method = method, party_index = id, raid_index = nil }
-    else
-      -- WotLK 3.3.5a, BCC, Retail: GetLootMethod returns (method, partyMaster, raidMaster)
-      -- Party: partyMaster = 0-4, raidMaster = nil
-      -- Raid: partyMaster = nil, raidMaster = 1-40
-      local method, party_id, raid_id = api.GetLootMethod()
-      return { method = method, party_index = party_id, raid_index = raid_id }
-    end
+    local method, party_id, raid_id = api.GetLootMethod()
+    return { method = method, party_index = party_id, raid_index = raid_id }
   end
 
   local function get_master_loot_candidate( slot, index )
-    if m.vanilla then
-      return api.GetMasterLootCandidate( index )
-    else
-      return api.GetMasterLootCandidate( slot, index )
-    end
+    return api.GetMasterLootCandidate( slot, index )
   end
 
   local function get_raid_member( index )
