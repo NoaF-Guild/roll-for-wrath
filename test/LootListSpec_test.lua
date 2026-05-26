@@ -147,7 +147,7 @@ function LootListSpec:should_select_hr_item_if_clicked_on_any_item_of_that_id()
     rf.rolling_popup.should_display(
       item_link( item, 1 ),
       text( "This item is hard-ressed.", 11 ),
-      buttons( "Roll", "AwardOther", "Close" )
+      buttons( "SRRoll", "Roll", "AwardOther", "Close" )
     )
 
     -- When
