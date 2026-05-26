@@ -1,4 +1,4 @@
-package.path = "./?.lua;" .. package.path .. ";../?.lua;../RollFor/?.lua;../RollFor/libs/?.lua"
+package.path = "./?.lua;" .. package.path .. ";../?.lua"
 
 -- local lu = require( "luaunit" )
 -- local utils = require( "test/utils" )

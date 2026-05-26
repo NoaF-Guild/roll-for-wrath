@@ -1,4 +1,4 @@
-package.path = "./?.lua;" .. package.path .. ";../?.lua;../RollFor/?.lua;../RollFor/libs/?.lua;../RollFor/libs/vanilla/LibStub/?.lua"
+package.path = "./?.lua;" .. package.path .. ";../?.lua;../libs/vanilla/LibStub/?.lua"
 
 local M = {}
 
