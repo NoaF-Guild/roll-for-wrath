@@ -168,6 +168,51 @@ function M.new( db )
     return result
   end
 
+  local function add_player_item( player_name, item_id, quality )
+    if not player_name or not item_id then return false end
+
+    softres_data[ item_id ] = softres_data[ item_id ] or {
+      quality = quality,
+      rollers = {}
+    }
+
+    -- Check if player already has this item SR'd
+    for _, roller in ipairs( softres_data[ item_id ].rollers ) do
+      if roller.name == player_name then
+        roller.rolls = roller.rolls + 1
+        return true
+      end
+    end
+
+    table.insert( softres_data[ item_id ].rollers, m.Types.make_roller( player_name, 1 ) )
+    return true
+  end
+
+  local function remove_player_item( player_name, item_id )
+    if not player_name or not item_id then return false end
+    if not softres_data[ item_id ] then return false end
+
+    local rollers = softres_data[ item_id ].rollers
+    for i, roller in ipairs( rollers ) do
+      if roller.name == player_name then
+        if roller.rolls > 1 then
+          roller.rolls = roller.rolls - 1
+        else
+          table.remove( rollers, i )
+        end
+
+        -- Clean up empty item entries
+        if #rollers == 0 then
+          softres_data[ item_id ] = nil
+        end
+
+        return true
+      end
+    end
+
+    return false
+  end
+
   return {
     get = get,
     get_all_rollers = get_all_rollers,
@@ -177,6 +222,8 @@ function M.new( db )
     get_hr_item_ids = get_hr_item_ids,
     is_item_hardressed = is_item_hardressed,
     get_player_items = get_player_items,
+    add_player_item = add_player_item,
+    remove_player_item = remove_player_item,
     import = import,
     clear = clear,
     persist = persist

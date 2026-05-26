@@ -99,4 +99,135 @@ function SoftResIntegrationSpec:should_check_if_player_is_soft_ressing()
   lu.assertEquals( soft_res.is_player_softressing( "Ponpon", 333 ), false )
 end
 
+function SoftResIntegrationSpec:should_add_a_player_item_manually()
+  -- Given
+  local soft_res = mod.new()
+
+  -- When
+  local result = soft_res.add_player_item( "Psikutas", 19019, 4 )
+
+  -- Then
+  lu.assertEquals( result, true )
+  local rollers = soft_res.get( 19019 )
+  lu.assertEquals( #rollers, 1 )
+  lu.assertEquals( rollers[1].name, "Psikutas" )
+  lu.assertEquals( rollers[1].rolls, 1 )
+  lu.assertEquals( rollers[1].type, "Roller" )
+end
+
+function SoftResIntegrationSpec:should_increment_rolls_when_adding_same_player_and_item()
+  -- Given
+  local soft_res = mod.new()
+  soft_res.add_player_item( "Psikutas", 19019, 4 )
+
+  -- When
+  soft_res.add_player_item( "Psikutas", 19019, 4 )
+
+  -- Then
+  local rollers = soft_res.get( 19019 )
+  lu.assertEquals( #rollers, 1 )
+  lu.assertEquals( rollers[1].rolls, 2 )
+end
+
+function SoftResIntegrationSpec:should_add_multiple_players_to_same_item()
+  -- Given
+  local soft_res = mod.new()
+  soft_res.add_player_item( "Psikutas", 19019, 4 )
+
+  -- When
+  soft_res.add_player_item( "Obszczymucha", 19019, 4 )
+
+  -- Then
+  local rollers = soft_res.get( 19019 )
+  lu.assertEquals( #rollers, 2 )
+end
+
+function SoftResIntegrationSpec:should_return_false_when_adding_with_nil_player()
+  -- Given
+  local soft_res = mod.new()
+
+  -- When
+  local result = soft_res.add_player_item( nil, 19019, 4 )
+
+  -- Then
+  lu.assertEquals( result, false )
+end
+
+function SoftResIntegrationSpec:should_return_false_when_adding_with_nil_item_id()
+  -- Given
+  local soft_res = mod.new()
+
+  -- When
+  local result = soft_res.add_player_item( "Psikutas", nil, 4 )
+
+  -- Then
+  lu.assertEquals( result, false )
+end
+
+function SoftResIntegrationSpec:should_remove_a_player_item()
+  -- Given
+  local soft_res = mod.new()
+  soft_res.add_player_item( "Psikutas", 19019, 4 )
+
+  -- When
+  local result = soft_res.remove_player_item( "Psikutas", 19019 )
+
+  -- Then
+  lu.assertEquals( result, true )
+  lu.assertEquals( #soft_res.get( 19019 ), 0 )
+end
+
+function SoftResIntegrationSpec:should_decrement_rolls_when_removing_multi_roll()
+  -- Given
+  local soft_res = mod.new()
+  soft_res.add_player_item( "Psikutas", 19019, 4 )
+  soft_res.add_player_item( "Psikutas", 19019, 4 )
+
+  -- When
+  local result = soft_res.remove_player_item( "Psikutas", 19019 )
+
+  -- Then
+  lu.assertEquals( result, true )
+  local rollers = soft_res.get( 19019 )
+  lu.assertEquals( #rollers, 1 )
+  lu.assertEquals( rollers[1].rolls, 1 )
+end
+
+function SoftResIntegrationSpec:should_return_false_when_removing_nonexistent_item()
+  -- Given
+  local soft_res = mod.new()
+
+  -- When
+  local result = soft_res.remove_player_item( "Psikutas", 99999 )
+
+  -- Then
+  lu.assertEquals( result, false )
+end
+
+function SoftResIntegrationSpec:should_return_false_when_removing_player_not_on_item()
+  -- Given
+  local soft_res = mod.new()
+  soft_res.add_player_item( "Psikutas", 19019, 4 )
+
+  -- When
+  local result = soft_res.remove_player_item( "Obszczymucha", 19019 )
+
+  -- Then
+  lu.assertEquals( result, false )
+  lu.assertEquals( #soft_res.get( 19019 ), 1 )
+end
+
+function SoftResIntegrationSpec:should_clean_up_item_entry_when_last_roller_removed()
+  -- Given
+  local soft_res = mod.new()
+  soft_res.add_player_item( "Psikutas", 19019, 4 )
+  soft_res.remove_player_item( "Psikutas", 19019 )
+
+  -- When
+  local ids = soft_res.get_item_ids()
+
+  -- Then
+  lu.assertEquals( #ids, 0 )
+end
+
 os.exit( lu.LuaUnit.run() )
