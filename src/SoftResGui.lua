@@ -188,9 +188,39 @@ local function create_import_frame( api, on_import, on_clear, on_cancel, on_dirt
   label:SetPoint( "BOTTOMLEFT", frame, "BOTTOMLEFT", 20, 22 )
   label:SetTextColor( 1, 1, 1, 1 )
 
-  local sr_website = "chromieres.com"
+  local sr_url = "https://chromieres.com"
 
-  label:SetText( string.format( "%s      %s %s", m.colors.blue( "RollFor" ), hl( sr_website ), "data import" ) )
+  label:SetText( string.format( "%s      %s %s", m.colors.blue( "RollFor" ), hl( "chromieres.com" ), "data import" ) )
+
+  -- Clickable link overlay on the website text
+  local link_button = api().CreateFrame( "Button", nil, frame )
+  link_button:SetPoint( "BOTTOMLEFT", frame, "BOTTOMLEFT", 80, 18 )
+  link_button:SetWidth( 110 )
+  link_button:SetHeight( 20 )
+  link_button:SetScript( "OnEnter", function( self )
+    api().GameTooltip:SetOwner( self, "ANCHOR_TOP" )
+    api().GameTooltip:AddLine( "Click to copy URL" )
+    api().GameTooltip:Show()
+  end )
+  link_button:SetScript( "OnLeave", function() api().GameTooltip:Hide() end )
+  link_button:SetScript( "OnClick", function()
+    -- Create or show a small editbox with the URL pre-selected
+    if not frame.url_box then
+      local box = api().CreateFrame( "EditBox", nil, frame, "InputBoxTemplate" )
+      box:SetWidth( 220 )
+      box:SetHeight( 24 )
+      box:SetPoint( "BOTTOM", frame, "BOTTOM", 0, 42 )
+      box:SetAutoFocus( false )
+      box:SetFontObject( ChatFontNormal )
+      box:SetScript( "OnEscapePressed", function( self ) self:Hide() end )
+      box:SetScript( "OnEditFocusLost", function( self ) self:Hide() end )
+      frame.url_box = box
+    end
+    frame.url_box:SetText( sr_url )
+    frame.url_box:Show()
+    frame.url_box:SetFocus()
+    frame.url_box:HighlightText()
+  end )
 
   ---@diagnostic disable-next-line: undefined-global
   table.insert( UISpecialFrames, "RollForSoftResLootFrame" )
