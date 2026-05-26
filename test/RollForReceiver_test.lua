@@ -191,11 +191,32 @@ function RollForReceiverSpec:should_not_sync_to_awarded_loot_without_state()
 
   m.RollForReceiver.new( popup, db, wt, al )
 
-  -- RF_WIN without a prior RF_ITEM — no state, should be a no-op
+  -- RF_WIN without a prior RF_ITEM and no link in payload — should be a no-op
   simulate_message( { type = "RF_WIN", strategy = "NormalRoll", name = "Psikutas", class = "Warrior", roll_type = "MainSpec", roll = 95 } )
 
   eq( #al.awards, 0 )
   eq( #wt.tracked, 0 )
+end
+
+function RollForReceiverSpec:should_sync_direct_award_without_prior_rf_item()
+  setup()
+  local popup = mock_rolling_popup()
+  local wt = mock_winner_tracker()
+  local al = mock_awarded_loot()
+  local db = {}
+
+  m.RollForReceiver.new( popup, db, wt, al )
+
+  local link = item_link( "Thunderfury", 19019 )
+
+  -- RF_WIN with link in payload but no prior RF_ITEM (direct award / auto-loot)
+  simulate_message( { type = "RF_WIN", strategy = nil, name = "Psikutas", class = "Warrior", roll_type = nil, roll = nil, link = link, item_id = 19019 } )
+
+  eq( #al.awards, 1 )
+  eq( al.awards[1].player_name, "Psikutas" )
+  eq( al.awards[1].item_id, 19019 )
+  eq( al.awards[1].item_link, link )
+  eq( #wt.tracked, 1 )
 end
 
 function RollForReceiverSpec:should_not_award_when_awarded_loot_not_provided()

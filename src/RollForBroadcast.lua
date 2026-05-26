@@ -9,7 +9,9 @@ local CHANNEL = "RollForSync"
 
 ---@param roll_controller RollController
 ---@param config Config
-function M.new( roll_controller, config )
+---@param awarded_loot AwardedLoot?
+---@param player_info PlayerInfo?
+function M.new( roll_controller, config, awarded_loot, player_info )
   ---@diagnostic disable-next-line: undefined-global
   local lib_stub = LibStub
   local ace_comm = lib_stub and lib_stub( "AceComm-3.0", true )
@@ -81,13 +83,26 @@ function M.new( roll_controller, config )
     send_if_active( { type = "RF_TICK", seconds_left = data.seconds_left } )
   end )
 
-  roll_controller.subscribe( "winners_found", function( data )
-    if not data then return end
-    for _, winner in ipairs( data.winners ) do
-      send_if_active( { type = "RF_WIN", strategy = data.rolling_strategy, name = winner.name, class = winner.class, roll_type = winner.roll_type, roll = winner
-      .winning_roll } )
-    end
-  end )
+  -- Broadcast all awards (rolled, quick-award, auto-loot, trade) via AwardedLoot.
+  -- Only the ML broadcasts to avoid echo loops from receiver-side awards.
+  if awarded_loot and player_info then
+    awarded_loot.subscribe( "loot_awarded", function( record )
+      if not record then return end
+      if not player_info.is_master_looter() then return end
+
+      send( {
+        type = "RF_WIN",
+        strategy = record.rolling_strategy,
+        name = record.player_name,
+        class = record.player_class,
+        roll_type = record.roll_type,
+        roll = record.winning_roll,
+        link = record.item_link,
+        item_id = record.item_id,
+        quality = record.quality
+      } )
+    end )
+  end
 
   roll_controller.subscribe( "there_was_a_tie", function( data )
     if not data then return end

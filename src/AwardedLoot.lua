@@ -71,7 +71,11 @@ function M.new( db, group_roster, config )
       plus_one = plus_one
     } )
 
-    -- Notify subscribers that the list of winners has changed
+    -- Notify with full record so broadcast can relay it
+    local record = db.awarded_items[ #db.awarded_items ]
+    notify_subscribers( 'loot_awarded', record )
+
+    -- Notify subscribers that the list of winners has changed (for UI refresh)
     notify_subscribers( 'award_data_updated' )
   end
 
