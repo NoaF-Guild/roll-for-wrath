@@ -626,6 +626,20 @@ function M.on_player_login()
   if M.welcome_popup.should_show() then M.welcome_popup.show() end
   LootFrame:UnregisterAllEvents()
 
+  -- Suppress Blizzard's default loot frame (the corpse loot window).
+  -- UnregisterAllEvents alone is not enough on every core/client.
+  -- Belt-and-suspenders: noop the FrameXML entry-points so even if
+  -- something re-registers events the frame never actually appears,
+  -- AND hide via our own LOOT_OPENED handler with HideUIPanel.
+  if LootFrame_Show then LootFrame_Show = function() end end
+  if LootFrame_OnEvent then LootFrame_OnEvent = function() end end
+
+  local loot_frame_suppress = m.api.CreateFrame( "Frame" )
+  loot_frame_suppress:RegisterEvent( "LOOT_OPENED" )
+  loot_frame_suppress:SetScript( "OnEvent", function()
+    if LootFrame then HideUIPanel( LootFrame ) end
+  end )
+
   -- Suppress Blizzard's and ElvUI's master looter candidate dropdown (3.3.5a).
   -- On 3.3.5a, clicking a loot slot as ML fires OPEN_MASTER_LOOT_LIST which
   -- normally shows a dropdown for player selection. We replace the loot frame
@@ -662,7 +676,11 @@ function M.on_player_login()
   if GroupLootFrame1 then
     for i = 1, 4 do
       local frame = _G["GroupLootFrame" .. i]
-      if frame then frame:UnregisterAllEvents() end
+      if frame then
+        frame:UnregisterAllEvents()
+        frame.Show = function() end
+        frame:Hide()
+      end
     end
   end
 end

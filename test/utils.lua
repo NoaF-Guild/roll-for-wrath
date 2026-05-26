@@ -776,6 +776,8 @@ function M.mock_loot_frame()
   M.mock_object( "LootFrame", {
     GetFrameLevel = function() return 10 end,
     UnregisterAllEvents = function() end,
+    Show = function() end,
+    Hide = function() end,
   } )
 end
 
