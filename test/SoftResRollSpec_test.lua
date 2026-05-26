@@ -676,6 +676,7 @@ function SoftResTieRollSpec:should_display_tie_rolls()
     text( "There was a tie (42):", 11 ),
     softres_roll( p1, 2, 11 ),
     softres_roll( p2, 1 ),
+    text( "Psikutas wins the soft-res roll with 2.", 11 ),
     buttons( "AwardWinner", "RaidRoll", "AwardOther", "Close" )
   )
   rf.confirmation_popup.should_be_hidden()
@@ -702,6 +703,7 @@ function SoftResTieRollSpec:should_display_tie_rolls()
     text( "There was a tie (42):", 11 ),
     softres_roll( p1, 2, 11 ),
     softres_roll( p2, 1 ),
+    text( "Psikutas wins the soft-res roll with 2.", 11 ),
     buttons( "AwardWinner", "RaidRoll", "AwardOther", "Close" )
   )
 
@@ -825,6 +827,100 @@ function SoftResPlusSpec:should_use_sr_plus_values()
   rf.rolling_popup.should_be_hidden()
   rf.loot_frame.should_display(
     enabled_item( 1, "Hearthstone" )
+  )
+end
+
+SrCountEqualsItemCountSpec = {}
+
+function SrCountEqualsItemCountSpec:should_not_show_sr_placeholders_when_sr_player_count_equals_item_count()
+  -- Given
+  local loot_facade, chat = mock_loot_facade(), mock_chat()
+  local item, item2, p1, p2 = i( "Bag", 69 ), i( "Hearthstone", 123 ), p( "Psikutas" ), p( "Obszczymucha" )
+  local rf = new_roll_for()
+      :loot_facade( loot_facade )
+      :raid_roster( p1, p2 )
+      :chat( chat )
+      :soft_res_data( sr( p1.name, 69 ), sr( p2.name, 69 ) )
+      :build()
+  u.mock( "GiveMasterLoot", function( slot ) loot_facade.notify( "LootSlotCleared", slot ) end )
+
+  -- When
+  loot_facade.notify( "LootOpened", item, item, item2 )
+  rf.loot_frame.click( 1 )
+
+  -- Then (preview shows winners directly without Roll button and without placeholders)
+  rf.rolling_popup.should_display(
+    item_link( item, 2 ),
+    text( "Obszczymucha soft-ressed this item.", 11 ),
+    individual_award_button,
+    text( "Psikutas soft-ressed this item.", 8 ),
+    individual_award_button,
+    buttons( "AwardOther", "Close" )
+  )
+
+  -- When (simulating /rf 2x[Bag])
+  rf.roll_controller.start( "SoftResRoll", item, 2, 8 )
+
+  -- Then (popup shows winners without SR placeholder rolls)
+  rf.rolling_popup.should_display(
+    item_link( item, 2 ),
+    text( "Obszczymucha soft-ressed this item.", 11 ),
+    individual_award_button,
+    text( "Psikutas soft-ressed this item.", 8 ),
+    individual_award_button,
+    buttons( "RaidRoll", "AwardOther", "Close" )
+  )
+end
+
+TwoSrPlayersThreeItemsSpec = {}
+
+function TwoSrPlayersThreeItemsSpec:should_handle_two_sr_players_with_three_items()
+  -- Given
+  local loot_facade, chat = mock_loot_facade(), mock_chat()
+  local item, p1, p2 = i( "Bag", 69 ), p( "Psikutas" ), p( "Obszczymucha" )
+  local rf = new_roll_for()
+      :loot_facade( loot_facade )
+      :raid_roster( p1, p2 )
+      :chat( chat )
+      :soft_res_data( sr( p1.name, 69 ), sr( p2.name, 69 ) )
+      :build()
+
+  -- When (simulating /rf 3x[Bag])
+  rf.roll_controller.start( "SoftResRoll", item, 3, 8 )
+
+  -- Then
+  rf.rolling_popup.should_display(
+    item_link( item, 3 ),
+    text( "Obszczymucha soft-ressed this item.", 11 ),
+    text( "Psikutas soft-ressed this item.", 2 ),
+    buttons( "RaidRoll", "Close" )
+  )
+end
+
+function TwoSrPlayersThreeItemsSpec:should_show_award_buttons_when_looting_and_clicking()
+  -- Given
+  local loot_facade, chat = mock_loot_facade(), mock_chat()
+  local item, p1, p2 = i( "Bag", 69 ), p( "Psikutas" ), p( "Obszczymucha" )
+  local rf = new_roll_for()
+      :loot_facade( loot_facade )
+      :raid_roster( p1, p2 )
+      :chat( chat )
+      :soft_res_data( sr( p1.name, 69 ), sr( p2.name, 69 ) )
+      :build()
+  u.mock( "GiveMasterLoot", function( slot ) loot_facade.notify( "LootSlotCleared", slot ) end )
+
+  -- When
+  loot_facade.notify( "LootOpened", item, item, item )
+  rf.loot_frame.click( 1 )
+
+  -- Then (loot frame groups only 2 bags for the 2 SR players, leaving the 3rd for normal rolling)
+  rf.rolling_popup.should_display(
+    item_link( item, 2 ),
+    text( "Obszczymucha soft-ressed this item.", 11 ),
+    individual_award_button,
+    text( "Psikutas soft-ressed this item.", 8 ),
+    individual_award_button,
+    buttons( "AwardOther", "Close" )
   )
 end
 

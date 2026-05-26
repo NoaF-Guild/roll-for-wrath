@@ -91,6 +91,7 @@ function M.mock_wow_api()
   M.modules().api.InCombatLockdown = function() return false end
   M.modules().api.IsAltKeyDown = function() return false end
   M.modules().api.GetAddOnMetadata = function() return "2.6" end -- version
+  M.modules().api.C_AddOns = { GetAddOnMetadata = function() return "2.6" end }
   M.modules().api.tinsert = table.insert
   M.modules().api.PlaySound = function() end
   M.modules().api.C_ChatInfo = {}
@@ -103,6 +104,7 @@ function M.mock_wow_api()
   M.modules().api.UnitGUID = function() return "PrincessKenny" end
   M.modules().api.LootSlot = function() end
   M.modules().api.GetLootMethod = function() return "master" end
+  M.modules().api.C_PartyInfo = { GetLootMethod = function() return 2, 0 end }
   M.modules().api.IsInGroup = function() return true end
   M.modules().api.SOUNDKIT = {
     IG_MAIN_MENU_OPEN = 850,
@@ -213,6 +215,8 @@ function M.mock_wow_api()
           GetWidth = function() return 100 end,
           GetHeight = function() return 20 end,
           GetText = function() return "Font string text" end,
+          GetFont = function() return "GameFontNormal", 12, "" end,
+          SetFont = function() end,
           SetWidth = function() end,
           SetNonSpaceWrap = function() end,
           SetHeight = function() end,
@@ -769,6 +773,20 @@ function M.mock_libraries()
   m_repeating_tick_fn = nil
   M.mock_wow_api()
   M.mock_library( "AceTimer-3.0", M.mock_ace_timer() )
+  M.mock_library( "AceComm-3.0", {
+    RegisterComm = function() end,
+    SendCommMessage = function() end,
+  } )
+  M.mock_library( "LibSerialize", {
+    Serialize = function( _, data ) return tostring( data ) end,
+    Deserialize = function( _, data ) return true, data end,
+  } )
+  M.mock_library( "LibDeflate", {
+    CompressDeflate = function( _, data ) return data end,
+    DecompressDeflate = function( _, data ) return data end,
+    EncodeForWoWAddonChannel = function( _, data ) return data end,
+    DecodeForWoWAddonChannel = function( _, data ) return data end,
+  } )
 end
 
 ---@alias ModuleRegistryEntry { module_name: string, variable_name: string, mock: (string|function)? }
@@ -888,6 +906,9 @@ function M.load_real_stuff( req )
   r( "src/GuiElements" )
   r( "src/ModernLootFrameSkin" )
   r( "src/OgLootFrameSkin" )
+  r( "src/RollForBroadcast" )
+  r( "src/RollForReceiver" )
+  r( "src/GargulBridge" )
   -- r( "Libs/LibDeflate/LibDeflate" )
   r( "src/bcc/Json" )
   r( "main" )

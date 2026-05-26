@@ -38,7 +38,9 @@ function M.handle_events( main )
       main.new_group_event.on_group_changed()
     elseif event == "CHAT_MSG_PARTY" then
       main.roll_for_ad.on_chat_msg_party( arg1, arg2 )
-      -- main.on_chat_msg_system( arg1, arg2, arg3, arg4, arg5 )
+    --   main.on_chat_msg_system( arg1, arg2, arg3, arg4, arg5 )
+    -- elseif event == "CHAT_MSG_PARTY_LEADER" then
+    --   main.on_chat_msg_system( arg1, arg2, arg3, arg4, arg5 )
     elseif event == "CHAT_MSG_RAID" then
       main.roll_for_ad.on_chat_msg_raid( arg1, arg2 )
     elseif event == "CHAT_MSG_RAID_LEADER" then
@@ -66,6 +68,8 @@ function M.handle_events( main )
     elseif event == "PLAYER_TARGET_CHANGED" then
       main.master_loot_warning.on_player_target_changed()
       main.auto_master_loot.on_player_target_changed( arg1 )
+    elseif event == "GET_ITEM_INFO_RECEIVED" then
+      main.on_item_info_received( arg1 )
     elseif event == "UI_ERROR_MESSAGE" then
       local message = m.vanilla and arg1 or arg2  -- vanilla: arg1; BCC/WotLK: arg2
 
@@ -94,6 +98,7 @@ function M.handle_events( main )
   frame:RegisterEvent( "CHAT_MSG_SYSTEM" )
   frame:RegisterEvent( "CHAT_MSG_ADDON" )
   frame:RegisterEvent( "CHAT_MSG_PARTY" )
+  -- frame:RegisterEvent( "CHAT_MSG_PARTY_LEADER" )
   frame:RegisterEvent( "CHAT_MSG_RAID" )
   frame:RegisterEvent( "CHAT_MSG_RAID_LEADER" )
   frame:RegisterEvent( "CHAT_MSG_WHISPER_INFORM" )
@@ -106,6 +111,9 @@ function M.handle_events( main )
   frame:RegisterEvent( "TRADE_REQUEST_CANCEL" )
   frame:RegisterEvent( "UI_ERROR_MESSAGE" )
   frame:RegisterEvent( "PLAYER_TARGET_CHANGED" )
+  if not m.vanilla then
+    frame:RegisterEvent( "GET_ITEM_INFO_RECEIVED" )
+  end
   frame:RegisterEvent( "ZONE_CHANGED" )
   frame:RegisterEvent( "ZONE_CHANGED_NEW_AREA" )
 
