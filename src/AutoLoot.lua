@@ -128,7 +128,7 @@ function M.new( loot_list, api, db, config, player_info, game_api )
       local zone_name = api().GetRealZoneText()
       local item_ids = items[ zone_name ]
 
-      if not item_ids or getn( item_ids ) == 0 then
+      if not item_ids or m.count_elements( item_ids ) == 0 then
         frame:Hide()
       else
         frame:Show()
