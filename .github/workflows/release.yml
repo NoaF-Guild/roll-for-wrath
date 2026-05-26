@@ -1,0 +1,67 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - '[0-9]*'
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ github.ref }}
+
+      - name: Update Version in TOC and Push
+        run: |
+          # Configure Git
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          # Replace the version line in the .toc file
+          sed -i "s/^## Version: .*/## Version: ${{ github.ref_name }}/g" RollFor-WotLK.toc
+
+          # Check if there are changes to commit
+          if git diff --quiet RollFor-WotLK.toc; then
+            echo "No changes to TOC file"
+          else
+            git add RollFor-WotLK.toc
+            git commit -m "chore: update version to ${{ github.ref_name }} [skip ci]"
+            git push origin HEAD:master
+          fi
+
+      - name: Build zip
+        run: |
+          mkdir -p RollFor-WotLK
+          rsync -av --exclude='.git' --exclude='.github' --exclude='.gitignore' \
+            --exclude='.gitattributes' --exclude='.pkgmeta' --exclude='test' \
+            --exclude='test.sh' --exclude='docs' --exclude='dev' \
+            --exclude='RollFor-WotLK' . RollFor-WotLK/
+          zip -r RollFor-WotLK.zip RollFor-WotLK/
+
+      - name: Create Versioned GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: RollFor-WotLK.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Update Latest Tag
+        run: |
+          git tag -f latest
+          git push origin latest --force
+
+      - name: Update Latest GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: RollFor-WotLK.zip
+          tag_name: latest
+          name: Latest Release
+          body: "This release always contains the most recent version (${{ github.ref_name }})."
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
