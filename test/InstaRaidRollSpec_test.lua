@@ -537,7 +537,7 @@ function SingleWinnerInstaRaidRollSpec:should_hide_award_buttons_if_the_loot_is_
   rf.rolling_popup.should_display(
     item_link( item2, 1 ),
     text( "Obszczymucha wins the raid-roll.", 11 ),
-    buttons( "RaidRollAgain", "Close" )
+    buttons( "AwardWinner", "RaidRollAgain", "Close" )
   )
 
   -- When
@@ -550,7 +550,7 @@ function SingleWinnerInstaRaidRollSpec:should_hide_award_buttons_if_the_loot_is_
   rf.rolling_popup.should_display(
     item_link( item2, 1 ),
     text( "Obszczymucha wins the raid-roll.", 11 ),
-    buttons( "RaidRollAgain", "Close" )
+    buttons( "AwardWinner", "RaidRollAgain", "Close" )
   )
 
   -- When
@@ -625,7 +625,7 @@ function SingleWinnerInstaRaidRollSpec:should_select_the_same_item_after_reopeni
   rf.rolling_popup.should_display(
     item_link( item2, 1 ),
     text( "Obszczymucha wins the raid-roll.", 11 ),
-    buttons( "RaidRollAgain", "Close" )
+    buttons( "AwardWinner", "RaidRollAgain", "Close" )
   )
 
   -- When
@@ -638,7 +638,7 @@ function SingleWinnerInstaRaidRollSpec:should_select_the_same_item_after_reopeni
   rf.rolling_popup.should_display(
     item_link( item2, 1 ),
     text( "Obszczymucha wins the raid-roll.", 11 ),
-    buttons( "RaidRollAgain", "Close" )
+    buttons( "AwardWinner", "RaidRollAgain", "Close" )
   )
 
   -- When
@@ -711,7 +711,7 @@ function SingleWinnerInstaRaidRollSpec:should_not_select_the_item_after_awarding
   rf.rolling_popup.should_display(
     item_link( item2, 1 ),
     text( "Obszczymucha wins the raid-roll.", 11 ),
-    buttons( "RaidRollAgain", "Close" )
+    buttons( "AwardWinner", "RaidRollAgain", "Close" )
   )
 
   -- When
@@ -724,7 +724,7 @@ function SingleWinnerInstaRaidRollSpec:should_not_select_the_item_after_awarding
   rf.rolling_popup.should_display(
     item_link( item2, 1 ),
     text( "Obszczymucha wins the raid-roll.", 11 ),
-    buttons( "RaidRollAgain", "Close" )
+    buttons( "AwardWinner", "RaidRollAgain", "Close" )
   )
 
   -- When
@@ -835,7 +835,7 @@ function SingleWinnerInstaRaidRollSpec:should_work_if_loot_is_closed_while_award
   rf.rolling_popup.should_display(
     item_link( item, 1 ),
     text( "Obszczymucha wins the raid-roll.", 11 ),
-    buttons( "RaidRollAgain", "Close" )
+    buttons( "AwardWinner", "RaidRollAgain", "AwardOther", "Close" )
   )
 
   -- When
