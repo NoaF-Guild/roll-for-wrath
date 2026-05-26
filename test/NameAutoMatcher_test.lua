@@ -10,7 +10,7 @@ local utils = require( "test/utils" )
 
 NameAutoMatcherSpec = {}
 
--- Disabled because it uses softres.it encoded data.
+-- Disabled because it uses chromieres.com encoded data.
 -- function NameAutoMatcherSpec:should_load_encoded_softres_and_match_names()
 --   -- Given
 --   player( "Psikutas" )

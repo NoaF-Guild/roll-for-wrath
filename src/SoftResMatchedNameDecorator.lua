@@ -8,7 +8,7 @@ local M = {}
 local map = m.map
 
 -- I decorate given softres class with matched name logic.
--- Some players make typos in SoftRes.it and then their names don't match
+-- Some players make typos in their soft-res name and then their names don't match
 -- their in-game names. NameMatcher fixes that.
 function M.new( name_matcher, softres )
   local f = function( player )

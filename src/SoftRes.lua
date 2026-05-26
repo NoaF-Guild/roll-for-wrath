@@ -44,7 +44,7 @@ function M.new( db )
       return nil
     end
 
-    -- Try zlib decompression first (softres.it exports are compressed).
+    -- Try zlib decompression first (chromieres.com exports are compressed).
     -- If it fails, fall through and treat data as plain JSON (e.g. custom export tools).
     local decompressed = LibStub( "LibDeflate" ):DecompressZlib( data )
     if decompressed then
