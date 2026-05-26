@@ -219,8 +219,8 @@ local function create_components()
 
   M.loot_facade_listener = m.LootFacadeListener.new( M.loot_facade, M.auto_loot, M.dropped_loot_announce, M.master_loot, M.auto_group_loot, M.roll_controller, M.player_info )
 
-  M.client_broadcast = m.ClientBroadcast.new( M.roll_controller, M.softres, M.config )
-  M.client = m.Client.new( M.ace_timer, M.player_info, M.rolling_popup, M.config )
+  M.roll_for_broadcast = m.RollForBroadcast.new( M.roll_controller, M.config )
+  M.roll_for_receiver = m.RollForReceiver.new( M.rolling_popup, db( "roll_for_receiver" ) )
   M.sandbox = m.Sandbox.new()
 end
 
@@ -297,11 +297,6 @@ local function on_roll_command( roll_slash_command )
 
     if args == "versioncheck" then
       M.version_broadcast.group_version_request()
-      return
-    end
-
-    if string.find( args, "^client enable" ) and M.player_info.is_master_looter() then
-      M.client_broadcast.enable_roll_popup()
       return
     end
 
@@ -568,6 +563,10 @@ function M.on_group_changed()
   update_minimap_icon()
 end
 
+function M.on_item_info_received( item_id )
+  if M.roll_for_receiver then M.roll_for_receiver.on_item_info_received( item_id ) end
+end
+
 function M.on_chat_msg_addon( name, message, _, sender )
   if name ~= "RollFor" or not message then return end
   for ver in string.gmatch( message, "VERSION::(.*)" ) do M.version_broadcast.on_version( ver ) return end
@@ -576,7 +575,6 @@ function M.on_chat_msg_addon( name, message, _, sender )
     M.version_broadcast.on_version_response( requesting_player_name, channel, their_name, their_class, their_version )
     return
   end
-  for data in string.gmatch( message, "ROLL::(.*)" ) do M.client.on_message( data, sender ) return end
 end
 
 m.key_bindings = m.KeyBindings.new( M )
