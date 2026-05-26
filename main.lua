@@ -141,7 +141,6 @@ local function create_components()
     M.absent_softres, db( "softres_check" ) )
 
   M.winner_tracker = m.WinnerTracker.new( db( "winner_tracker" ) )
-  M.game_api = m.GameApi.new( m.api )
   M.loot_facade = m.LootFacade.new( m.EventFrame.new( m.api ), M.game_api )
   M.raw_loot_list = m.LootList.new( M.loot_facade, M.item_utils, M.tooltip_reader, m.BossList.zones, nil )
   M.loot_list = m.SoftResLootListDecorator.new( M.raw_loot_list, M.softres )
