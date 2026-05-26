@@ -48,7 +48,8 @@ function M.new( players, in_raid )
 
   local function unit_class( unit )
     local player = get_player_by_unit( unit )
-    return player and player.class
+    if not player then return nil end
+    return player.class, player.class
   end
 
   local function unit_is_connected( unit )

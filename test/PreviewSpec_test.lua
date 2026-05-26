@@ -683,7 +683,7 @@ function PreviewSoftResWinnersSpec:should_display_award_other_button_and_award_j
     item_link( item, 1 ),
     roll_placeholder( p2, 11 ),
     roll_placeholder( p1 ),
-    buttons( "Roll", "AwardOther", "Close" )
+    buttons( "SRRoll", "Roll", "AwardOther", "Close" )
   )
   rf.confirmation_popup.should_be_hidden()
   chat.console( "RollFor: Jimmy received [Hearthstone]." )
@@ -784,7 +784,7 @@ function PreviewSoftRessedItemSpec:should_display_close_button_that_closes_the_p
     roll_placeholder( p2, 11 ),
     roll_placeholder( p1 ),
     roll_placeholder( p1 ),
-    buttons( "Roll", "AwardOther", "Close" )
+    buttons( "SRRoll", "Roll", "AwardOther", "Close" )
   )
 
   -- When
@@ -829,7 +829,7 @@ function PreviewSoftRessedItemSpec:should_display_roll_button_that_starts_rollin
     roll_placeholder( p2, 11 ),
     roll_placeholder( p1 ),
     roll_placeholder( p1 ),
-    buttons( "Roll", "AwardOther", "Close" )
+    buttons( "SRRoll", "Roll", "AwardOther", "Close" )
   )
 
   -- When
@@ -871,7 +871,7 @@ function PreviewSoftRessedItemSpec:should_display_roll_button_that_starts_rollin
     roll_placeholder( p2, 11 ),
     roll_placeholder( p1 ),
     roll_placeholder( p1 ),
-    buttons( "Roll", "AwardOther", "Close" )
+    buttons( "SRRoll", "Roll", "AwardOther", "Close" )
   )
 
   -- When
@@ -938,7 +938,7 @@ function PreviewSoftRessedItemSpec:should_reset_the_preview_if_loot_was_closed_a
     roll_placeholder( p2, 11 ),
     roll_placeholder( p1 ),
     roll_placeholder( p1 ),
-    buttons( "Roll", "AwardOther", "Close" )
+    buttons( "SRRoll", "Roll", "AwardOther", "Close" )
   )
 end
 
@@ -976,7 +976,7 @@ function PreviewHardResWinnersSpec:should_display_close_button_that_closes_the_p
   rf.rolling_popup.should_display(
     item_link( item, 1 ),
     text( "This item is hard-ressed.", 11 ),
-    buttons( "Roll", "AwardOther", "Close" )
+    buttons( "SRRoll", "Roll", "AwardOther", "Close" )
   )
 
   -- When
@@ -1021,7 +1021,7 @@ function PreviewHardResWinnersSpec:should_display_roll_button_that_starts_rollin
   rf.rolling_popup.should_display(
     item_link( item, 1 ),
     text( "This item is hard-ressed.", 11 ),
-    buttons( "Roll", "AwardOther", "Close" )
+    buttons( "SRRoll", "Roll", "AwardOther", "Close" )
   )
 
   -- When
@@ -1064,7 +1064,7 @@ function PreviewHardResWinnersSpec:should_display_award_other_button_that_shows_
   rf.rolling_popup.should_display(
     item_link( item, 1 ),
     text( "This item is hard-ressed.", 11 ),
-    buttons( "Roll", "AwardOther", "Close" )
+    buttons( "SRRoll", "Roll", "AwardOther", "Close" )
   )
 
   -- When
