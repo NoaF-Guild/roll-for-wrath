@@ -512,7 +512,7 @@ end
 function M.get_addon_version()
     -- Attempt to get the version safely
     local version_str = GetAddOnMetadata("RollFor", "Version") 
-                     or GetAddOnMetadata("RollFor-WotLK", "Version") 
+                     or GetAddOnMetadata("roll-for-wrath", "Version") 
                      or GetAddOnMetadata("RollFor_WotLK", "Version")
     
     -- Hard fallback so it never returns nil

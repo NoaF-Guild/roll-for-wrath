@@ -1,7 +1,7 @@
 ## Interface: 30300
 ## Title: RollFor
 ## Author: Zae
-## Version: 1.4.2
+## Version: 1.5.0
 ## Notes: An automated item roller with soft ressing support via chromieres.com.
 ## SavedVariables: RollForDb
 ## SavedVariablesPerCharacter: RollForCharDb

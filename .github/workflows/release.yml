@@ -24,30 +24,30 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
           # Replace the version line in the .toc file
-          sed -i "s/^## Version: .*/## Version: ${{ github.ref_name }}/g" RollFor-WotLK.toc
+          sed -i "s/^## Version: .*/## Version: ${{ github.ref_name }}/g" roll-for-wrath.toc
 
           # Check if there are changes to commit
-          if git diff --quiet RollFor-WotLK.toc; then
+          if git diff --quiet roll-for-wrath.toc; then
             echo "No changes to TOC file"
           else
-            git add RollFor-WotLK.toc
+            git add roll-for-wrath.toc
             git commit -m "chore: update version to ${{ github.ref_name }} [skip ci]"
             git push origin HEAD:master
           fi
 
       - name: Build zip
         run: |
-          mkdir -p RollFor-WotLK
+          mkdir -p roll-for-wrath
           rsync -av --exclude='.git' --exclude='.github' --exclude='.gitignore' \
             --exclude='.gitattributes' --exclude='.pkgmeta' --exclude='test' \
             --exclude='test.sh' --exclude='docs' --exclude='dev' \
-            --exclude='RollFor-WotLK' . RollFor-WotLK/
-          zip -r RollFor-WotLK.zip RollFor-WotLK/
+            --exclude='roll-for-wrath' . roll-for-wrath/
+          zip -r roll-for-wrath.zip roll-for-wrath/
 
       - name: Create Versioned GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          files: RollFor-WotLK.zip
+          files: roll-for-wrath.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -59,7 +59,7 @@ jobs:
       - name: Update Latest GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          files: RollFor-WotLK.zip
+          files: roll-for-wrath.zip
           tag_name: latest
           name: Latest Release
           body: "This release always contains the most recent version (${{ github.ref_name }})."

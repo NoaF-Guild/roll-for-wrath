@@ -47,7 +47,7 @@ Runs the relevant test(s) on every `.lua` save.
 - **Framework:** Bundled luaunit at `test/luaunit.lua`.
 - **Mocking:** `test/mocking.lua` provides `M.mock(name, value)`, `M.smart_table(map)`, `M.packed_value(array)` for injecting fake globals.
 - **Addon bootstrap:** `test/utils.lua:923` — `M.load_real_stuff(req)` loads the entire addon into the test process in TOC order, mocks `_G` via `M.mock_api()`, and sets `m.wotlk = true`. Call this before constructing real components.
-- **Test compat layer:** `load_real_stuff` loads `src/bcc/compat` (not `src/wotlk/compat`) because the BCC layer provides `getn` / `mod` polyfills the test harness depends on. Tests that need WotLK-specific behavior must explicitly set `m.wotlk = true` after loading modules.
+- **Test compat layer:** `load_real_stuff` loads `src/wotlk/compat` which provides `getn` / `mod` polyfills the test harness depends on. `m.wotlk = true` is set automatically by the compat layer.
 - **Integration tests:** `test/IntegrationTestBuilder.lua` wires real components together with selective mock substitution via `M.load_real_stuff_and_inject(module_registry, target_table)`.
 - **Standard mocks:**
   - `test/mocks/GameApi.lua` — use `GameApiMock.new(overrides)` for any test constructing `MasterLootCandidates`, `LootFacade`, `PlayerInfo`, or `AutoLoot`.

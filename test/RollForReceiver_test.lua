@@ -1,6 +1,6 @@
 package.path = "./?.lua;" .. package.path .. ";../?.lua;../libs/vanilla/LibStub/?.lua"
 
-require( "src/bcc/compat" )
+require( "src/wotlk/compat" )
 local utils = require( "test/utils" )
 local lu, eq = utils.luaunit( "assertEquals" )
 local m = require( "src/modules" )

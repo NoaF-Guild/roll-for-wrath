@@ -1,6 +1,6 @@
 package.path = "./?.lua;" .. package.path .. ";../?.lua"
 
-require( "src/bcc/compat" )
+require( "src/wotlk/compat" )
 local u                              = require( "test/utils" )
 local lu                             = u.luaunit()
 local player, leader                 = u.player, u.raid_leader
