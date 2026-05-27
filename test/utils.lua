@@ -926,7 +926,7 @@ function M.load_real_stuff( req )
   local r = req or require
 
   load_libstub()
-  r( "src/bcc/compat" )
+  r( "src/wotlk/compat" )
   r( "src/modules" )
   M.mock_api()
   r( "src/DebugBuffer" )
