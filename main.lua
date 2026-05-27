@@ -681,17 +681,57 @@ function M.on_player_login()
     if DropDownList1 then DropDownList1:Hide() end
   end )
 
-  -- Also suppress the group loot roll frames if present
+  -- Dynamically suppress Blizzard's group loot roll frames (need/greed/pass)
+  -- only when master loot is active. In non-ML modes (group loot, FFA, etc.)
+  -- the frames must remain functional so players can roll on items.
+  local group_loot_originals = {}
   if GroupLootFrame1 then
     for i = 1, 4 do
       local frame = _G["GroupLootFrame" .. i]
       if frame then
-        frame:UnregisterAllEvents()
-        frame.Show = function() end
-        frame:Hide()
+        group_loot_originals[ i ] = { frame = frame, Show = frame.Show }
       end
     end
   end
+
+  local group_loot_suppressed = false
+
+  local function suppress_group_loot_frames()
+    if group_loot_suppressed then return end
+    group_loot_suppressed = true
+    for _, entry in pairs( group_loot_originals ) do
+      entry.frame:UnregisterAllEvents()
+      entry.frame.Show = function() end
+      entry.frame:Hide()
+    end
+  end
+
+  local function restore_group_loot_frames()
+    if not group_loot_suppressed then return end
+    group_loot_suppressed = false
+    for _, entry in pairs( group_loot_originals ) do
+      entry.frame.Show = entry.Show
+      entry.frame:RegisterEvent( "START_LOOT_ROLL" )
+      entry.frame:RegisterEvent( "CANCEL_LOOT_ROLL" )
+    end
+  end
+
+  local function update_group_loot_suppression()
+    if m.is_master_loot() then
+      suppress_group_loot_frames()
+    else
+      restore_group_loot_frames()
+    end
+  end
+
+  -- Evaluate on login and whenever the loot method changes.
+  update_group_loot_suppression()
+
+  local gl_suppress_frame = m.api.CreateFrame( "Frame" )
+  gl_suppress_frame:RegisterEvent( "PARTY_LOOT_METHOD_CHANGED" )
+  gl_suppress_frame:SetScript( "OnEvent", function()
+    update_group_loot_suppression()
+  end )
 end
 
 function M.unaward_item( player_name, item_id, item_link )
