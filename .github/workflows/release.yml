@@ -36,13 +36,7 @@ jobs:
           fi
 
       - name: Build zip
-        run: |
-          mkdir -p roll-for-wrath
-          rsync -av --exclude='.git' --exclude='.github' --exclude='.gitignore' \
-            --exclude='.gitattributes' --exclude='.pkgmeta' --exclude='test' \
-            --exclude='test.sh' --exclude='docs' --exclude='dev' \
-            --exclude='roll-for-wrath' . roll-for-wrath/
-          zip -r roll-for-wrath.zip roll-for-wrath/
+        run: ./scripts/package.sh "${{ github.ref_name }}"
 
       - name: Create Versioned GitHub Release
         uses: softprops/action-gh-release@v2
