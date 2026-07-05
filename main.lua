@@ -748,13 +748,30 @@ function M.on_item_info_received( item_id )
   if M.roll_for_receiver then M.roll_for_receiver.on_item_info_received( item_id ) end
 end
 
+local VERSION_SIGNATURE = "roll-for-wrath"
+
 function M.on_chat_msg_addon( name, message, _, sender )
   if name ~= "RollFor" or not message then return end
-  for ver in string.gmatch( message, "VERSION::(.*)" ) do M.version_broadcast.on_version( ver ) return end
-  for channel, requesting_player_name in string.gmatch( message, "VERSION_REQUEST::(.-)::(.*)" ) do M.version_broadcast.on_version_request( channel, requesting_player_name ) return end
-  for requesting_player_name, channel, their_name, their_class, their_version in string.gmatch( message, "VERSION_RESPONSE::(.-)::(.-)::(.-)::(.-)::(.*)" ) do
-    M.version_broadcast.on_version_response( requesting_player_name, channel, their_name, their_class, their_version )
-    return
+
+  for signature, ver in string.gmatch( message, "VERSION::(.-)::(.*)" ) do
+    if signature == VERSION_SIGNATURE then
+      M.version_broadcast.on_version( ver )
+      return
+    end
+  end
+
+  for signature, channel, requesting_player_name in string.gmatch( message, "VERSION_REQUEST::(.-)::(.-)::(.*)" ) do
+    if signature == VERSION_SIGNATURE then
+      M.version_broadcast.on_version_request( channel, requesting_player_name )
+      return
+    end
+  end
+
+  for signature, requesting_player_name, channel, their_name, their_class, their_version in string.gmatch( message, "VERSION_RESPONSE::(.-)::(.-)::(.-)::(.-)::(.-)::(.*)" ) do
+    if signature == VERSION_SIGNATURE then
+      M.version_broadcast.on_version_response( requesting_player_name, channel, their_name, their_class, their_version )
+      return
+    end
   end
 end
 

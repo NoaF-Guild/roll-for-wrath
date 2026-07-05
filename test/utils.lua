@@ -328,6 +328,7 @@ function M.mock_api()
   M.mock( "UnitName", "Psikutas" )
   M.mock( "UnitClass", function() return "Warrior", "WARRIOR" end )
   M.mock( "GetRealZoneText", "Elwynn Forest" )
+  M.mock( "GetAddOnMetadata", function() return "2.6" end )
   M.mock( "UnitIsGroupLeader", false )
 
   -- Loot Interface

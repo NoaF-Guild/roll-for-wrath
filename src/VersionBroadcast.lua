@@ -7,6 +7,7 @@ local M = {}
 
 local pp = m.pretty_print
 local ADDON_NAME = "RollFor"
+local SIGNATURE = "roll-for-wrath"
 local orange = m.colors.orange
 local c = m.colorize_player_by_class
 
@@ -28,7 +29,7 @@ function M.new( db, player_info, my_version )
   end
 
   local function broadcast_version( channel )
-    m.SendAddonMessage( m.api, ADDON_NAME, "VERSION::" .. my_version, channel )
+    m.SendAddonMessage( m.api, ADDON_NAME, "VERSION::" .. SIGNATURE .. "::" .. my_version, channel )
   end
 
   local function broadcast_version_to_the_guild()
@@ -52,7 +53,7 @@ function M.new( db, player_info, my_version )
   local function notify_about_new_version( ver )
     db.last_new_version_reminder_timestamp = m.lua.time()
     pp( string.format( "New version (%s) is available!", m.colors.highlight( string.format( "v%s", ver ) ) ) )
-    pp( "https://github.com/obszczymucha/roll-for-vanilla/releases/download/latest/RollFor.zip" )
+    pp( "https://github.com/NoaF-Guild/roll-for-wrath/releases/download/latest/roll-for-wrath.zip" )
   end
 
   local newest_version = nil
@@ -82,7 +83,8 @@ function M.new( db, player_info, my_version )
     if not channel or not requesting_player_name then return end
     m.SendAddonMessage( m.api, ADDON_NAME,
       string.format(
-        "VERSION_RESPONSE::%s::%s::%s::%s::%s",
+        "VERSION_RESPONSE::%s::%s::%s::%s::%s::%s",
+        SIGNATURE,
         requesting_player_name,
         channel,
         player_info.get_name(),
@@ -97,7 +99,7 @@ function M.new( db, player_info, my_version )
   end
 
   local function version_request( channel )
-    m.SendAddonMessage( m.api, ADDON_NAME, string.format( "VERSION_REQUEST::%s::%s", channel, player_info.get_name() ), channel )
+    m.SendAddonMessage( m.api, ADDON_NAME, string.format( "VERSION_REQUEST::%s::%s::%s", SIGNATURE, channel, player_info.get_name() ), channel )
   end
 
   local function group_version_request()
