@@ -392,6 +392,7 @@ function M.mock_config( overrides )
           }
         end,
         auto_loot = function() return overrides.auto_loot ~= false end,
+        auto_master_loot = function() return overrides.auto_master_loot ~= false end,
         tmog_rolling_enabled = function() return overrides.tmog_rolling_enabled ~= false end,
         rolling_popup = function() return true end,
         raid_roll_again = function() return overrides.raid_roll_again or false end,

@@ -145,6 +145,70 @@ M.zones    = {
     "Sir Zeliek",
     "Sapphiron",
     "Kel'Thuzad"
+  },
+  [ "The Obsidian Sanctum" ] = {
+    "Sartharion",
+    "Shadron",
+    "Tenebron",
+    "Vesperon"
+  },
+  [ "Vault of Archavon" ] = {
+    "Archavon the Stone Watcher",
+    "Emalon the Storm Watcher",
+    "Koralon the Flame Watcher",
+    "Toravon the Ice Watcher"
+  },
+  [ "The Eye of Eternity" ] = {
+    "Malygos"
+  },
+  [ "Ulduar" ] = {
+    "Flame Leviathan",
+    "Ignis the Furnace Master",
+    "Razorscale",
+    "XT-002 Deconstructor",
+    "Steelbreaker",
+    "Runemaster Molgeim",
+    "Stormcaller Brundir",
+    "Kologarn",
+    "Auriaya",
+    "Hodir",
+    "Thorim",
+    "Freya",
+    "Mimiron",
+    "General Vezax",
+    "Yogg-Saron",
+    "Algalon the Observer"
+  },
+  [ "Trial of the Crusader" ] = {
+    "Gormok the Impaler",
+    "Acidmaw",
+    "Dreadscale",
+    "Icehowl",
+    "Lord Jaraxxus",
+    "Eydis Darkbane",
+    "Fjola Lightbane",
+    "Anub'arak"
+  },
+  [ "Icecrown Citadel" ] = {
+    "Lord Marrowgar",
+    "Lady Deathwhisper",
+    "Deathbringer Saurfang",
+    "Festergut",
+    "Rotface",
+    "Professor Putricide",
+    "Prince Valanar",
+    "Prince Keleseth",
+    "Prince Taldaram",
+    "Blood-Queen Lana'thel",
+    "Valithria Dreamwalker",
+    "Sindragosa",
+    "The Lich King"
+  },
+  [ "The Ruby Sanctum" ] = {
+    "Saviana Ragefire",
+    "Baltharus the Warborn",
+    "General Zarithrian",
+    "Halion"
   }
 }
 
